@@ -1,0 +1,215 @@
+            nconfig version 0.4
+
+What is nconfig?
+
+    It is a kernel configuration backend with several frontends.
+    Kernel 2.2/2.4 (Config.in, nodes) and 2.6.x (Kconfig, zconf) are supported.
+    The original nconfig (now tconfig) was the only frontend hence the name.
+
+    Backend:
+    nodes.h
+    nodes.cpp
+
+    Frontends:
+    tconfig - terminal based - useful to see printf output
+    nconfig - ncurses based
+    kkonfig - Qt3 based
+    gconfig - gtk+-2.0 based
+    gconfig1- gtk+ based - useless, only initialize the tree
+
+
+How to make it?
+
+    Use make to make all or make <frontend>.
+
+    To have kernel 2.6.x support there must be a link to kconfig.
+    If you have a link from /usr/src/linux to your current kernel
+    the kconfig link is already correct.
+
+    Otherwise do -> ln -s /usr/src/<linux-2.6.x>/scripts/kconfig kconfig
+    in the project directory.(Where this README is.)
+
+    Further first do a -make config- to make zconf and then quit it.
+    If kkonfig fail to make set QTDIR, QMAKESPEC and PATH
+    to the correct values. (in kkonfig/setqt)
+
+    To make nconfig you need ncurses
+    To make gconfig you need glib-2.0-dev gtk+-2.0-dev and gnomeui-dev
+    To make kkonfig you need qt3 
+
+
+How to use it?
+
+    Backend:
+    Currently only by linking with nodes.o, see also Doc.txt
+
+    Frontends:
+        Commandline:
+        -A arch -P path -C .config file
+    -S -show available architectures-
+    -h -help... (do I _really_ need to explain?)
+        Supported by all the included frontends.
+    eg: nconfig -P /yourkernel -S
+        nconfig -P /yourkernel -A arch
+
+
+nconfig & tconfig keys:
+
+View:
+    q - quit
+    a - all/menu mode
+    s - show/hide skipped
+    d - show/hide disabled
+
+Value:
+    Del - set N
+    1 - set N
+    2 - set M
+    3 - set Y
+    Ins - set Y
+    space: change value
+
+Load & Save:
+    O - load, # = .config
+    L - load, # = .config
+    S - save, # = .config
+
+    Note: 2.6.x support require(for now) to chdir to the kernel path.
+    If you by accident press Ctrl-S, press Ctrl-Q or Scroll Lock to continue...
+
+
+Navigation:
+    h - view help/exit help
+    x - cross reference/exit cross reference
+    Right - into menu
+    Left - out of menu
+    Up,Down,PgUp,PgDn,Home and End will also work.
+
+nconfig specific:
+    f - view source file/exit source view
+    c - lock/unlock the cursor
+    space,enter - follow link
+    Esc,f,h,q - exit link
+
+Searching (nconfig keys only):
+    r - reset, start from top
+    / - search for a prompt
+    F - search for a prompt
+    C - search for a CONFIG_
+    n - next
+    N - search for the current prompt (useful to locate a xref entry)
+    Left - exit search mode (will return to "Menu Mode")
+
+    Searching is CASE sensitive
+
+nconfig is mouse enabled:
+    left: change value, follow link, or enter menu
+    right: cross reference the setting
+
+
+kkonfig & gconfig:
+
+Tree:
+    To utilize the cross reference
+    preferably turn on Skipped and Disabled items.
+
+Help & text:
+    Blue text is a link.
+    Backspace Esc Left = previous
+    Space Enter Right  = next
+
+    Hint: If a file is not in a <file:xxx> you can type it in yourself.
+      (any file for that matter :)
+
+
+Special Notes:
+
+    - 2.6.x will terminate if parsing fail.
+    - 2.6.x support require(for now) to cd to the kernel path.
+    - 2.6.x can only init once per process
+
+    - 2.2.x and early 2.4.x kernels have a '#' in a prompt causing truncation,
+      in drivers/sound/Config.in, please remove it manually.
+    - 2.2.x syntax is not always strictly correct, you may need to edit it.
+
+
+History:
+
+    When I began working on this at about 03/2004 I didn't actually think that
+    I would get very far, but it was easier than expected,
+    and I added 2.6.x support at the beginning of August.
+    I've been working on it sporadically since till now (21/08/2004).
+
+    This is my first project on Linux so learning how to program the system,
+    ncurses,Qt and gtk+2 took quite some time (much more than the backend).
+    Very helpful books were:
+    Beginning Linux Programming 2nd Ed (wrox)
+    Running Linux 3rd Ed (O'Reilly)
+
+    And then some more time was spent writing this file and the api doc.
+    (Saved for last... I wonder why???)
+
+    And I finally added some form of searching. (12/09/2004).
+
+    v0.2 - tested on Kernel-2.6.8.1
+    Fixed a bug when coming out of Xref mode in nconfig, end Sept 2004.
+
+    v0.3 - tested on Kernel-2.6.11 (18-20/02/2006)
+    Fixed null ptr bug (nconfig.cpp:187) when entering/leaving a node which
+        contained only hidden skipped/disabled nodes...
+    Added / searching. (more vim like:)
+    Fixed wrong README path caused by getcwd,
+        now using readlink("/proc/self/exe",,);
+
+    v0.4 - tested on Kernel-2.6.18 (20/12/2006)
+    Turned display skipped nodes off by default (in nodes.h)
+    Updated my email address in the source
+    Added Documentation/xxx.txt link support without <file:xxx.txt>
+        Seem that some people don't follow the spec...
+    Turned display disabled nodes off by default (06/08/2007...!!!)
+    Fixed source Kconfig.hz bug -- don't see the .hz (17/11/2007... time flies doesn't it ?)
+	    (see nodes.cpp:2845 -> NodeRoot::GetLink)
+    Turned display disabled nodes on again by default in nconfig (21/03/2011)
+    Moved  #include "kconfig/lkc.h"  from nodes.h to nodes.cpp to get gconfig to compile.
+    Minor fix to get kkonfig to compile.
+    Updated the "How to make it?" section.
+
+    todo
+    Improve the find system. and add finding to doc browser
+    mouse wheel support - couldn't get it to work properly in curses...
+
+
+Nconfig provide the following:
+
+    Skipped nodes:
+    if(a) b=1 c=0 else c=1
+    When 'a' change from 1 to 0 then 'b' will still be 1.
+    With nconfig 'b' will be reset to 0, and only if
+    that specific assignment was the last one to change it.
+    If a menu,if or choice is skipped everything in it will also be reset.
+
+    Pre definition dependencies:
+    if(a) b=1
+    a=1
+    Should 'b' be 0 or 1 ? In Config.in terms it should be 1.
+    This is achieved by executing from the top again with
+    the values from the previous run.
+    'Acpi PCI Hotplug driver' on 2.4.20 is a good example.
+
+    Syntax checking:
+    Nconfig will report the file and line where the error occured.
+
+    Cross referencing:
+    Nconfig provide GetDepTree which return all relevant options.
+    
+    Efficiency:
+    Once the config files are in cache nconfig will load quite fast.
+    Changing settings use almost no cpu.
+
+    Support:
+    2.2.x and 2.4.x natively
+    2.6.x through zconf
+    Kconfig files are more complicated to parse and run
+    and Roman Zippel did a good job with zconf, so why bother ?
+
+

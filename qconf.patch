@@ -1,0 +1,19 @@
+1169a1170
+> 	split2->setOrientation(QSplitter::Horizontal);
+1182a1184
+> 	split2->setOrientation(QSplitter::Vertical);
+1198a1201
+> 	split2->setOrientation(QSplitter::Horizontal);
+1206c1209,1218
+< 	configList->setAllOpen(FALSE);
+---
+> 	//configList->setAllOpen(FALSE);
+> 	
+> 	QListViewItemIterator it(configList);
+> 
+> 	for (; it.current(); it++)
+> 	{
+> 		it.current()->setOpen(
+> 			!(((ConfigItem*)it.current())->menu->flags & MENU_ROOT));
+> 	}
+>         //

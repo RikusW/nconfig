@@ -1,0 +1,526 @@
+Preliminary nconfig nodes documentation to get started
+
+Copyright (C) 2004 Rikus Wessels
+<rikusw at rootshell dot be>
+GNU GPL v2.0
+
+Conventions:
+
+Marked with:
+    2.4 = 2.4 only
+    2.6 = 2.6 only
+    2.x/unmarked = 2.4/2.6
+    Generally only use only 2.x features.
+    If you want 2.6 specifics do it in #ifdef LKC26 <xxxx> #endif
+
+#-----Initialization-----#
+
+int NodeRoot::Init_CmdLine(int argc,char *argv[],bool bSpc);
+Look below.
+
+int NodeRoot::Init(char *Arch,char *Path,char *Config,bool bSpc);
+
+Load the config.in files and initialize the tree.
+
+After init NodeRoot->bLkc26 will show if Kernel version 2.6.x is being used.
+Lkc26 don't provide proper cleanup (afaik) and won't reinit,
+so Init will fail but start a new instance using system(path/prog -P xx -A xx);
+Use Init_CmdLine for the initial init else this won't work.
+
+Arch,	The architechture.
+	default: i386
+		
+Path,	The path.
+	default: /usr/src/linux
+		
+Config,	The config file to use in current or absolute dir.
+	default: /usr/src/linux/.config
+		
+bSpc	Keep the leading spaces in /prompt/ ?
+	default: false
+)
+
+Return values
+    1 invalid path
+    2 invalid arch
+    3 parse failed
+    4 commandline = -h -S or failed
+    8 loading of configfile failed - can be ignored
+
+#-----
+
+char *NodeRoot::GetPath()
+Return the kernel path.
+
+#-----
+
+char *NodeRoot::GetArch()
+Return the current Architecture.
+
+#-----
+
+const char *GetFirstArch()
+const char *GetNextArch()
+
+Get a list of available architectures.
+
+GetNextArch() will free the previous 'p' and when returning 0,
+the rest of the internal structures is freed automatically.
+
+ALWAYS USE AS:
+for(const char *p = GetFirstArch(); p; p = GetNextArch())
+{
+    do_whatever(p);
+    // continue will free p, so make a copy.
+}
+
+#-----
+
+NodeRoot::SetNotify(enumNodes en);
+
+Get Node status info, useful for GUI apps.
+
+
+en	Callback function
+	typedef bool (enumNodes*)(Node *n,int flags,void *pv);
+
+	n	The node
+	flags	The message (NS_UNSKIP,NS_SKIP,NS_ENABLE,NS_DISABLE,
+			     NS_EXPAND,NS_COLLAPSE,NS_STATE,NS_PROMPT only one)
+	pv	node->user value
+	
+
+#-----Node navigation-----#
+
+bool Node***::Enumerate(enumNodes en,int flags,void *pv); - exclude calling node
+bool Node***::_Enumerate(enumNodes en,int flags,void *pv); - include calling node & Next
+
+Get a listing of all the nodes.
+Use this to populate a treeview, display the nodes or whatever.
+
+en	Callback function
+	typedef bool (enumNodes*)(Node *n,int flags,void *pv);
+	
+	n	The node
+	flags	The state of the node (NS_SKIPPED,NS_DISABLED,NS_HIDDEN or combined)
+	pv	Specified by Enumerate
+
+flags	NS_SKIPPED	include skipped (by NodeIf) nodes
+	NS_DISABLED	include disabled (NodeDep***) nodes
+	NS_HIDDEN	include hidden nodes (collapsed parent)
+	NS_EXIT		call again when exitting the parent
+	NS_DOWN		include the children of a parent
+	See Nodes.h:62 or line:404 for predefined combinations
+
+pv	passed to the callback
+
+
+Return value
+    0 interrupted
+    1 completed
+
+#-----
+
+typedef bool (*SearchNodes)(Node *n,void *pv)
+Node *Node***::Search(SearchNodes sn,void *pv,int i=3)
+
+Use for specialized searching, eg:
+//---------------------------------------
+bool sn(Node* n,void *pv)
+{
+    return (your evaluation);
+}
+
+Node *n = rootnode;
+while((n = n->Search(sn,yourvalue)))
+{
+    do whatever
+}
+//---------------------------------------
+
+sn	user defined callback
+	Return value
+	    true = match
+	    false = not match
+
+pv	passed to callback
+
+i	LEAVE ALONE !!!
+
+Return value
+    0 not found
+    * Node found
+
+#-----
+
+NodeParent *Node::GetParent(unsigned int tp=0,unsigned int flags=~0)
+
+Get a parent type matching with flags or tp.
+If tp = 0 and flags = ~0 then flags = 0;
+
+flags	NTT_****, type & f == f , tp=0
+
+tp	NT_****, type == tp, flags=0
+	See Nodes.h
+
+Return value
+    0 - Not found
+    * - Found. Pointer to NodeParent. Must -NOT- be freed.
+
+#-----
+
+Node *Node::GetChild()
+
+Get the first child of this node.
+
+Return value
+    0 - Not found
+    * - Child
+
+
+
+#-----Getting and setting the node value-----#
+
+unsigned int Node***::Advance(int updt=1)
+
+Cycle between 1,2,3 - n,m,y
+    
+#-----    
+    
+unsigned int Node***::Set(unsigned int w,int updt=1);
+
+Set the value of a node
+
+w	1=n,2=m,3=y,>3=char*
+
+updt	NOT to be used. Run the update?
+
+Return value
+    The value that was actually set.
+
+#-----
+
+unsigned int Node***::Get()
+
+Get the current value of the node
+
+#-----
+
+unsigned int Node***::Set(const char *s,int updt=1);
+
+Set the string value of a node
+
+s	Nn,Mm,Yy = 1,2,3; else -> string
+
+updt	see above
+
+Return value
+    0 on fail, else same as Set(uint)
+
+#-----
+
+const char *Node***::GetStr()
+
+Get the current string value of the node
+123 = nmy else string
+
+
+
+#-----Loading and saving-----#
+
+bool NodeRoot::Load(const char *c);
+
+Load a config file.
+
+c	0  - load 'path/.config'
+	"" - clear all (set to N) (not on 2.6)
+	str - load file str
+
+Return value
+    0 - fail
+    1 - OK
+
+#-----
+
+bool NodeRoot::Save(const char *c);
+
+Save a config file.
+
+	0  - save 'path/.config'
+	"" - fail
+	".config" - fail
+	str - save file str
+
+Return value
+    0 - fail
+    1 - OK
+
+#-----
+
+bool NodeRoot::Modified()
+
+Useful for checking before exit.
+
+Return value
+    0 - not modified
+    1 - modified
+
+
+
+#-----Misc Get/Set-----#
+
+Node *Node::GetDepTree()
+
+Get a dependency listing on this node.
+Must be displayed in the same way as NodeRoot.
+
+#-----
+
+char *Node::GetHelp()
+
+Get the associated help from Configure.help
+
+Return value
+    0 - Not found
+    * - null terminated string, may be very long.
+
+#-----
+
+char *Node::GetSymbol()
+
+Get the CONFIG_* string.
+
+Return value
+    0 - Can possible happen, like on menu nodes.
+    * - The string
+
+#-----
+
+char *Node::GetPrompt()
+
+Get the prompt.
+
+Return value
+    0 - Not very likely.
+    * - The prompt
+
+#-----
+
+char *Node::GetSource()
+
+The file in which it was parsed.
+
+Return value
+    0 - Not likely
+    * - The source
+
+#-----
+
+int Node::GetLine()
+
+The line in the source.
+
+#-----
+
+int *Node::GetState()
+
+The state of the node (NS_SKIPPED,NS_DISABLED,NS_HIDDEN or combined)
+
+#-----
+
+unsigned int Node::GetType()
+
+The Node type NT_, seed Nodes.h:104 and line:433
+
+
+
+#-----Help & text browsing-----#
+
+char *NodeRoot::GetHelpH(Node *n)
+
+Return value
+    0 - failed
+    * - formatted help for node n
+	--autofreed--
+
+#-----
+
+char *GetFileH(const char*)
+
+Open a file or directory and return the data.
+
+Return value
+    0 - failed
+    * - file data
+	--autofreed--
+
+#-----
+
+char *GetLinkFileH(const char *line,int x,char **start,char **end,int *l,char **fn)
+
+Convenience function, combining GetLink and GetFileH.
+
+line,x,start,end - see GetLink
+
+l -  0 or ptr, line linked to or 0
+
+fn - 0 or ptr, as returned by GetLink
+
+Return value
+    0 - failed
+    * - file data
+	--autofreed--
+
+#-----
+
+void SetAutoFreeH(bool b)
+
+The pointer is freed internally just before the next is allocated.
+You are responsible for freeing all pointers allocated while autofree was off.
+
+b - false turn autofree off
+    true = default
+
+#-----
+
+void FreeH(char *p)
+
+p - the pointer you chose to free yourself.
+
+#-----
+
+char * NodeRoot::GetLink(const char *line,int x,char **start,char **end);
+
+Return a link position or hittest for a link.
+<file:****>
+source ****Config.in
+source ****Kconfig
+source "****Kconfig"
+
+line	null terminated string
+
+x	* or -1, position on the line
+
+start	0 or ptr
+
+end	0 or ptr
+
+Return value
+    0 - No link found
+
+    (x = -1)
+    * - start and end(where null should be) is set
+
+    (x >= 0)
+    * - linked filename. start and end is set. 
+
+
+
+#-----NS_ Flags-----#
+
+    // Flags used by Notify
+    // only ONE of these will be passed to the callback at a time
+    NS_STATE    	  // update your state
+    NS_PROMPT		  // update your prompt
+    NS_SKIP	NS_UNSKIP // 2.4 - skipped by if   2.6 - parent disabled
+    NS_DISABLE  NS_ENABLE // 2.4 - dep_* disabled  2.6 - invisible
+    NS_COLLAPSE NS_EXPAND // 2.x - 
+
+    // Flags used by Enumerate
+    NS_SKIPPED	 // enumerate skipped nodes
+    NS_DISABLED	 // enumerate disabled nodes
+    NS_COLLAPSED // enumerate a collapsed parent and children
+    NS_EXIT	 // pass (flags | NS_EXIT) to callback when leaving a parent
+    NS_DOWN	 // used to enumerate children recursively
+
+#-----
+
+    // preset Enumerate flag sets
+    // menu driven app - don't go NS_DOWN
+    NS_M_NORMAL, NS_M_ALL = NS_EXIT | [ NS_DISABLED | NS_SKIPPED ]
+    
+    // listing driven app, with collapsible parents
+    NS_P_NORMAL, NS_P_ALL = NS_EXIT | NS_DOWN | [ NS_DISABLED | NS_SKIPPED ]
+   
+    // tree view construction
+    NS_T_NORMAL, NS_T_ALL = NS_COLLAPSED | [ NS_DISABLED | NS_SKIPPED ]
+	// use NT_T_ALL to construct your tree and then hide nodes as needed.
+
+
+
+#-----NTT_ Flags and NT_ types-----#
+
+Usage:
+
+    NT_*
+	Node type, use only Parent Nodes in direct comparison.
+
+    NTT_*
+	Is bits indicating type properties.
+	Use like: ((type & NTT_*) or (type & (NTT_A | NTT_B))
+		  (type & (NTT_A | NTT_B)) == (NTT_A | NTT_B)
+
+#-----
+
+Parent Nodes:
+
+    // you can test for these with (NT_* == type)
+    <NTT_PARENT | NTT_VISIBLE + (1-6)>
+	NT_ROOT    // the root of it all
+	NT_MENU    // menu node
+	NT_IF      // 2.4 !NTT_VISIBLE
+	NT_SOURCE  // 2.4 !NTT_VISIBLE
+	NT_CHOICEP // choice parent
+	NT_DLIST   // deplist
+
+#-----
+
+Nodes:
+
+    // in general don't test for these types
+    // use the NTT_ bits instead. (maybe NT & type == NT)
+    // NT_* = NTT_VISIBLE | NTT_INPUT | [ NTT_NMY* || NTT_STRING* ]
+
+    NTT_NMY - set if value is of type 'nmy'
+	NTT_BOOL => NT_BOOL
+	NTT_TRI  => NT_TRISTATE
+	    NTT_MBOOL // 2.4 only
+
+    NTT_STRING - set if value is of type string
+	NTT_HEX  => NT_HEX
+	NTT_INT  => NT_INT
+	NTT_STR  => NT_STR
+
+    // misc
+    NT_COMMENT !NTT_INPUT (don't use &== here)
+
+    // can have set as well:
+    NTT_VISIBLE
+    NTT_INPUT
+    NTT_PARENT	- 2.6 only, 2.4 compatible
+    NTT_DEP	- 2.4 only
+    NTT_DEF	- 2.x !NTT_VISIBLE on 2.4
+    NTT_CHOICE
+
+#-----
+
+Cast safe types:
+
+    // since 2.6 types cannot be used for casting except for these:
+    NT_ROOT	// 2.x	to NodeRoot
+    NT_DLIST	// 2.x	to NodeDListP
+    NTT_PARENT  // 2.x	to NodeParent
+
+#-----
+
+2.4 specific:
+
+    // you should not depend on any of these, it is for 2.4 internal use
+    NT_DEPBOOL NT_DEPMBOOL NT_DEPTRISTATE NT_CHOICE NT_TEXT
+    NT_UNSET NT_DEFBOOL NT_DEFTRISTATE NT_DEFHEX NT_DEFINT NT_DEFSTR
+    NT_SYMBOL // internal
+
+
+#-----End of File-----#
+
+

@@ -1,0 +1,15 @@
+-- gconfig 
+   - Keyboard accelerators
+   - search selection visibility in gconfig
+     - (it seem to work on the second pass though...???)
+
+-- make search case insensitive ???
+	or better jet, regexp???
+
+-- let right click search for the same prompt (gc + kk)
+   used to locate a xref prompt
+
+-- nconfig history
+	search +
+	history + xref merge...
+
