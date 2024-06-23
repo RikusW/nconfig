@@ -114,7 +114,7 @@ rOK:
 	return 1;
 }
 
-int CfgFile::StrCmpAdv(const char *s1,const char *s2,int cnt)
+int CfgFile::StrCmpAdv(const char *s1, const char *s2, int cnt)
 {
 	for(int i=0; i<cnt; i++)
 	{
@@ -124,7 +124,7 @@ int CfgFile::StrCmpAdv(const char *s1,const char *s2,int cnt)
 	return 0;
 }
 
-int CfgFile::Open(const char *strFile,bool bPath)
+int CfgFile::Open(const char *strFile, bool bPath)
 {
 	int fd;
 	struct stat st;
@@ -133,30 +133,30 @@ int CfgFile::Open(const char *strFile,bool bPath)
 	if(bPath)
 	{
 		if(*strFile == '/') fn[0]=0; else
-			strcpy(fn,Symbols->GetPath());
-		strcat(fn,strFile);
+			strcpy(fn, Symbols->GetPath());
+		strcat(fn, strFile);
 	}else
 	{
-		strcpy(fn,strFile);
+		strcpy(fn, strFile);
 	}
 
-	fd = open(fn,O_RDONLY);
+	fd = open(fn, O_RDONLY);
 	if(fd == -1)
 	{
-		printf("Couldn't open <%s>.\n",strFile);
+		printf("Couldn't open <%s>.\n", strFile);
 		return 0;
 	}
 
-	if(fstat(fd,&st) == -1)
+	if(fstat(fd, &st) == -1)
 	{
-		printf("Couldn't get file stats <%s>.\n",strFile);
+		printf("Couldn't get file stats <%s>.\n", strFile);
 		goto endclose;
 	}
 
 	pmem = (void*)malloc(st.st_size+2); // pad end by 2
 	if(!pmem)
 	{
-		printf("Couldn't malloc memory <%s>.\n",strFile);
+		printf("Couldn't malloc memory <%s>.\n", strFile);
 		goto endclose;
 	}
 	cmem = (char*)pmem;
@@ -165,13 +165,13 @@ int CfgFile::Open(const char *strFile,bool bPath)
 	LineNext=cmem;
 	EndMem=&cmem[st.st_size];
 
-	if(read(fd,pmem,st.st_size) != st.st_size)
+	if(read(fd, pmem, st.st_size) != st.st_size)
 	{
-		printf("File read error <%s>.\n",strFile);
+		printf("File read error <%s>.\n", strFile);
 		goto endfree;
 	}
 
-	strcpy(FName,strFile);
+	strcpy(FName, strFile);
 	close(fd);
 	return 1;
 
@@ -182,7 +182,7 @@ endclose:
 	return 0;
 }
 
-int CfgFile::TestOpen(const char *strFile,bool bPath)
+int CfgFile::TestOpen(const char *strFile, bool bPath)
 {
 	int fd;
 	char fn[1024];
@@ -190,17 +190,17 @@ int CfgFile::TestOpen(const char *strFile,bool bPath)
 	if(bPath)
 	{
 		if(*strFile == '/') fn[0]=0; else
-			strcpy(fn,Symbols->GetPath());
-		strcat(fn,strFile);
+			strcpy(fn, Symbols->GetPath());
+		strcat(fn, strFile);
 	}else
 	{
-		strcpy(fn,strFile);
+		strcpy(fn, strFile);
 	}
 
-	fd = open(fn,O_RDONLY);
+	fd = open(fn, O_RDONLY);
 	if(fd == -1)
 	{
-		//printf("Couldn't open <%s>.\n",fn);
+		//printf("Couldn't open <%s>.\n", fn);
 		return 0;
 	}
 
@@ -224,18 +224,18 @@ void CfgFile::ParseError(const char *msg)
 		LineCurrent++;
 	}
 	LineNext++;
-	printf("%s\n<%s> %i: %s\n",msg,FName,LineNum,LineStart);
+	printf("%s\n<%s> %i: %s\n", msg, FName, LineNum, LineStart);
 }
 
 #define TRIM while(LineCurrent<LineNext && (*LineCurrent==' ' || *LineCurrent=='\x09'))\
 		LineCurrent++;
 
-#define ADDNODE(str,l,nt,type) \
-if(!StrCmpAdv(LineCurrent,str,l))\
+#define ADDNODE(str, l, nt, type) \
+if(!StrCmpAdv(LineCurrent, str, l))\
 {\
 	Node##nt *n = new Node##nt(type);\
 	np->AddChild(n);\
-	if(!((Node*)n)->Parse(LineCurrent,LineNum)) {\
+	if(!((Node*)n)->Parse(LineCurrent, LineNum)) {\
 		ParseError("Node"#nt"->Parse failed."); return 0; }\
 	continue;\
 }
@@ -252,21 +252,21 @@ int CfgFile::Parse(NodeParent *np)
 //-----------------------------------------------------------------------------
 // Mainmenu
 
-		if(!StrCmpAdv(LineStart,"mainmenu_option ",16)) {
-			if(StrCmpAdv(LineCurrent,"next_comment",12)) {
+		if(!StrCmpAdv(LineStart, "mainmenu_option ", 16)) {
+			if(StrCmpAdv(LineCurrent, "next_comment", 12)) {
 				ParseError("<next_comment> expected after mainmenu_option");
 				return 0;
 			}
 
 			while(ReadLine() && *LineStart == 0); // catch blank lines
-			if(StrCmpAdv(LineStart,"comment ",8)) {
+			if(StrCmpAdv(LineStart, "comment ", 8)) {
 				ParseError("<comment > expected after mainmenu_option");
 				return 0;
 			}
 
 			NodeMenu *p = new NodeMenu();
 			np->AddChild(p);
-			if(!((Node*)p)->Parse(LineCurrent,LineNum)) {
+			if(!((Node*)p)->Parse(LineCurrent, LineNum)) {
 				ParseError("menu comment parse error");
 				return 0;
 			}
@@ -275,7 +275,7 @@ int CfgFile::Parse(NodeParent *np)
 			continue;
 		}
 
-		if(!StrCmpAdv(LineStart,"endmenu",7)) {
+		if(!StrCmpAdv(LineStart, "endmenu", 7)) {
 			if(np->type != NT_MENU)	{
 				ParseError("Unexpected <endmenu>, expecting <fi>.");
 				return 0;
@@ -286,7 +286,7 @@ int CfgFile::Parse(NodeParent *np)
 //-----------------------------------------------------------------------------
 // if
 
-		if(!StrCmpAdv(LineStart,"if",2)) {
+		if(!StrCmpAdv(LineStart, "if", 2)) {
 			TRIM // check for [
 			if(*LineCurrent !='[') {
 				ParseError("[ expected after if."); return 0;
@@ -305,13 +305,13 @@ int CfgFile::Parse(NodeParent *np)
 			if(*LineCurrent++!=';') ReadLine(); // is 'then' on the next line ?
 
 			TRIM // check for then
-			if(StrCmpAdv(LineCurrent,"then",4)) {
+			if(StrCmpAdv(LineCurrent, "then", 4)) {
 				ParseError("then expected after if[]"); return 0;
 			}
 
 			NodeIf *p = new NodeIf();
 			np->AddChild(p);
-			if(!((Node*)p)->Parse(s,LineNum)) {
+			if(!((Node*)p)->Parse(s, LineNum)) {
 				ParseError("If parsing."); return 0;
 			}
 
@@ -319,7 +319,7 @@ int CfgFile::Parse(NodeParent *np)
 			continue;
 		}
 
-		if(!StrCmpAdv(LineStart,"else",4)) {
+		if(!StrCmpAdv(LineStart, "else", 4)) {
 			NodeIf *ni=(NodeIf*)np;
 			if(np->type!=NT_IF || ni->bElse) {
 				ParseError("Unexpected <else>.");
@@ -330,7 +330,7 @@ int CfgFile::Parse(NodeParent *np)
 		}
 
 
-		if(!StrCmpAdv(LineStart,"fi",2)) {
+		if(!StrCmpAdv(LineStart, "fi", 2)) {
 			if(np->type != NT_IF) {
 				ParseError("Unexpected <fi>, expecting <endmenu>.");
 				return 0;
@@ -340,59 +340,59 @@ int CfgFile::Parse(NodeParent *np)
 
 //-----------------------------------------------------------------------------$$$
 
-		ADDNODE("bool",4,Tri,NT_BOOL)
-		ADDNODE("hex",3,Str,NT_HEX)
-		ADDNODE("int",3,Str,NT_INT)
-		ADDNODE("string",6,Str,NT_STRING)
-		ADDNODE("tristate",8,Tri,NT_TRISTATE);
+		ADDNODE("bool", 4, Tri, NT_BOOL)
+		ADDNODE("hex", 3, Str, NT_HEX)
+		ADDNODE("int", 3, Str, NT_INT)
+		ADDNODE("string", 6, Str, NT_STRING)
+		ADDNODE("tristate", 8, Tri, NT_TRISTATE);
 
 //-----------------------------------------------------------------------------$$$
 
-		if(!StrCmpAdv(LineStart,"define_",7)) {
-			ADDNODE("bool",4,Def,NT_DEFBOOL)
-			ADDNODE("hex",3,Def,NT_DEFHEX)
-			ADDNODE("int",3,Def,NT_DEFINT)
-			ADDNODE("string",6,Def,NT_DEFSTRING)
-			ADDNODE("tristate",8,Def,NT_DEFTRISTATE)
+		if(!StrCmpAdv(LineStart, "define_", 7)) {
+			ADDNODE("bool", 4, Def, NT_DEFBOOL)
+			ADDNODE("hex", 3, Def, NT_DEFHEX)
+			ADDNODE("int", 3, Def, NT_DEFINT)
+			ADDNODE("string", 6, Def, NT_DEFSTRING)
+			ADDNODE("tristate", 8, Def, NT_DEFTRISTATE)
 			goto unrec;
 		}
 
 //-----------------------------------------------------------------------------
 
-		if(!StrCmpAdv(LineStart,"dep_",4)) {
-			ADDNODE("bool",4,Dep,NT_DEPBOOL)
-			ADDNODE("mbool",5,Dep,NT_DEPMBOOL)
-			ADDNODE("tristate",8,Dep,NT_DEPTRISTATE)
+		if(!StrCmpAdv(LineStart, "dep_", 4)) {
+			ADDNODE("bool", 4, Dep, NT_DEPBOOL)
+			ADDNODE("mbool", 5, Dep, NT_DEPMBOOL)
+			ADDNODE("tristate", 8, Dep, NT_DEPTRISTATE)
 			goto unrec;
 		}
 
 //-----------------------------------------------------------------------------
 
-		ADDNODE("source",6,Source,) // file including
-		ADDNODE("comment",7,Comment,)
-		ADDNODE("choice",6,ChoiceP,)
-		ADDNODE("text",4,Comment,)
-		ADDNODE("unset",5,Unset,)
+		ADDNODE("source", 6, Source, ) // file including
+		ADDNODE("comment", 7, Comment, )
+		ADDNODE("choice", 6, ChoiceP, )
+		ADDNODE("text", 4, Comment, )
+		ADDNODE("unset", 5, Unset, )
 #ifdef USE_NCHOICE
-		ADDNODE("nchoice",7,ChoiceNP,)
+		ADDNODE("nchoice", 7, ChoiceNP, )
 #endif
 
 //-----------------------------------------------------------------------------
 
-		if(!StrCmpAdv(LineStart,"mainmenu_name",13)) // should occur only once...
+		if(!StrCmpAdv(LineStart, "mainmenu_name", 13)) // should occur only once...
 		{
 			NodeParent *p;
 			if(np->GetType() == NT_SOURCE) p = np; else p = np->GetParent(NT_SOURCE);
 
 			if(p->GetParent()->GetType() == NT_ROOT) {
 setmm:				Node *n = p->GetParent(); // will be root->source
-				if(!n->Parse(LineCurrent,LineNum))
+				if(!n->Parse(LineCurrent, LineNum))
 					ParseError("mainmenu_name parse error.");
 				continue;
 			}else{
 				// mips fixup where this is in a second file
 				if(p->GetType() == NT_SOURCE &&
-				   !::strncmp(np->prompt,"arch/",5)) {
+				   !::strncmp(np->prompt, "arch/", 5)) {
 					p = p->GetParent(NT_SOURCE);
 					if(p->GetParent()->GetType() == NT_ROOT) goto setmm;
 				}
@@ -434,7 +434,7 @@ unrec:
 //---------------------------------------------------------------------------------------===###
 // Symbols Node
 
-NodeSymbols::NodeSymbols(const char *Arch,NodeRoot *r)
+NodeSymbols::NodeSymbols(const char *Arch, NodeRoot *r)
 {
 	type=NT_SYMBOL;
 	Root=r;
@@ -447,12 +447,12 @@ NodeSymbols::NodeSymbols(const char *Arch,NodeRoot *r)
 	val[1]=1; syms[1]="n\0	 ";
 	val[2]=2; syms[2]="m\0	 ";
 	val[3]=3; syms[3]="y\0	 ";
-	arch = (char*)malloc(strlen(Arch)+1); strcpy(arch,Arch);
+	arch = (char*)malloc(strlen(Arch)+1); strcpy(arch, Arch);
 	val[4]=(uintptr_t)arch; syms[4]="ARCH"; // a hack for $ARCH usage (3 times = mips sparc sparc64)
 	for(i=5; i<SYMBOL_LIMIT; i++) { val[i]=0; syms[i]=0; }
 	for(i=0; i<SYMBOL_LIMIT; i++) { dep[i]=0; who[i]=0; help[i]=0; }
 
-	AddSymbol("CONFIG_MODULES",1); // added into 5;
+	AddSymbol("CONFIG_MODULES", 1); // added into 5;
 }
 
 inline bool NodeSymbols::HasModules() { return val[5]==3; } // CONFIG_MODULES == y ?
@@ -477,13 +477,13 @@ bool NodeSymbols::SetPath(const char *s)
 	if(path) free(path);
 	path = (char*)malloc(strlen(s)+2);
 	if(!path) return 0;
-	strcpy(path,s);
-	if(*s) if(s[strlen(s)-1] != '/') strcat(path,"/");
+	strcpy(path, s);
+	if(*s) if(s[strlen(s)-1] != '/') strcat(path, "/");
 
 	// valid ?
-	strcpy(fn,s);
-	if(*fn) if(fn[strlen(fn)-1] != '/') strcat(fn,"/");
-	strcat(fn,"arch");
+	strcpy(fn, s);
+	if(*fn) if(fn[strlen(fn)-1] != '/') strcat(fn, "/");
+	strcat(fn, "arch");
 	ArchDir = opendir(fn);
 	if(!ArchDir) return 0;
 	closedir(ArchDir);
@@ -496,9 +496,9 @@ int NodeSymbols::AddSymbol(char *s, uintptr_t v)
 
 	if(*s=='$') s++;
 
-	char *s1,*s2;
+	char *s1, *s2;
 	// is it already added ?
-if(!strncmp(s,"CONFIG_",7)) // make the parse +-3 times faster
+if(!strncmp(s, "CONFIG_", 7)) // make the parse +-3 times faster
 {
 	for(int i=Count-1; i>4; i--)
 	{
@@ -535,18 +535,18 @@ if(!strncmp(s,"CONFIG_",7)) // make the parse +-3 times faster
 }
 	char *p;
 	int l = strlen(s)+1;
-	if(l<10) { p = (char*)malloc(10); memset(p,0,10); } else
+	if(l<10) { p = (char*)malloc(10); memset(p, 0, 10); } else
 			 { p = (char*)malloc(l); }
 	if(!p) { printf("AddSymbol malloc fail.\n"); return 0; }
 
-	strcpy(p,s);
+	strcpy(p, s);
 	syms[Count] = p;
 	if(v) { val[Count]=v; dep[Count]|=0x80000000; } else
 		  { val[Count]=1; dep[Count]++; }
 	return Count++;
 }
 
-void NodeSymbols::Reset(int s,Node *n)
+void NodeSymbols::Reset(int s, Node *n)
 {
 	if(s<5 || s>=Count) return;
 	// who dunnit ?   \/ nobody so guilty anyway... used for loading
@@ -555,14 +555,14 @@ void NodeSymbols::Reset(int s,Node *n)
 	}
 }
 
-bool NodeSymbols::Set(int s,uintptr_t v,Node *n)
+bool NodeSymbols::Set(int s, uintptr_t v, Node *n)
 {
 	if(s<5 || s>=Count) return 0;
 	if(v == 2 && !HasModules()) v = 3;
 
 /*XXX	if(who[s] != n && who[s])
 		printf("override from: %s:%i to: %s:%i\n",
-				who[s]->GetPrompt(),who[s]->Get(),n->GetPrompt(),n->Get());//*/
+				who[s]->GetPrompt(), who[s]->Get(), n->GetPrompt(), n->Get());//*/
 	who[s]=n;
 	val[s]=v;
 	return 1;
@@ -634,11 +634,11 @@ char *NodeSymbols::GetHelp(int s)
 	return help[s];
 }
 
-void NodeSymbols::AddHelp(char *cfg,char *helpstr)
+void NodeSymbols::AddHelp(char *cfg, char *helpstr)
 {
-	char *s1,*s2;
+	char *s1, *s2;
 	// is it already added ?
-	if(!::strncmp(cfg,"CONFIG_",7)) // make the search +-3 times faster
+	if(!::strncmp(cfg, "CONFIG_", 7)) // make the search +-3 times faster
 	{
 		 for(int i=Count-1; i>4; i--)
 		 {
@@ -653,7 +653,7 @@ void NodeSymbols::AddHelp(char *cfg,char *helpstr)
 	}else{
 		cfg[40]=0;
 		for(int i=0; i<40; i++) if(cfg[i] == '\n') { cfg[i] = 0; break; }
-		 printf("Invalid AddHelp <%s>\n",cfg);
+		 printf("Invalid AddHelp <%s>\n", cfg);
 	}
 	return;
 }
@@ -686,7 +686,7 @@ int CfgFile::LoadHelp(NodeSymbols *Symbols)
 				if(*LineStart == 'C' && // CONFIG_ ?
 				   (*LineNext == ' ' || *LineNext == '\t' || *LineNext == '\n'))
 				{
-					Symbols->AddHelp(LineStart,LineNext);
+					Symbols->AddHelp(LineStart, LineNext);
 					term = LineNext;
 				}
 			}
@@ -754,7 +754,7 @@ NodeRoot::NodeRoot()
 	bLkc26 = false;
 	type = NT_ROOT;
 	prompt = (char*)malloc(10);
-	strcpy(prompt,"NodeRoot"); // DON'T use Parse here...
+	strcpy(prompt, "NodeRoot"); // DON'T use Parse here...
 }
 
 
@@ -765,7 +765,7 @@ void Node::SetPrompt(const char *s)
 	prompt = (char *)malloc(strlen(s)+1);
 	if(!prompt)
 		return;
-	strcpy(prompt,s);
+	strcpy(prompt, s);
 }
 
 
@@ -794,13 +794,13 @@ NodeIf::~NodeIf()
 //---------------------------------------------------------------------------------------===###
 // Parsing Functions is only supported on NC24
 #ifndef NC24
-bool NodeMenu::Parse(char *s,int l) { // mainmenu_option - comment
+bool NodeMenu::Parse(char *s, int l) { // mainmenu_option - comment
 	return 0;
 }
-bool NodeRoot::Parse(char *s,int l) { // mainmenu_name
+bool NodeRoot::Parse(char *s, int l) { // mainmenu_name
 	return 0;
 }
-bool NodeSource::Parse(char *s,int l) {
+bool NodeSource::Parse(char *s, int l) {
 	return 0;
 }
 char *Node::ParsePrompt(char *s) { return 0; }
@@ -817,7 +817,7 @@ void  Node::DefPrompt() {}
 	while(1)\
 	{\
 		if(*s==stop) { if(stop) { *s++=0; } break; }\
-		if(*s==0) { printf("%c expected after /word/.\n",stop); return 0; } s++;\
+		if(*s==0) { printf("%c expected after /word/.\n", stop); return 0; } s++;\
 	}
 
 
@@ -837,14 +837,14 @@ char *Node::ParsePrompt(char *s)
 	while(1)
 	{
 		if(*s==stop) { *s++=0; i++; break; }
-		if(*s==0) { printf("%c expected after /prompt/.\n",stop); return 0; }
+		if(*s==0) { printf("%c expected after /prompt/.\n", stop); return 0; }
 		s++; i++;
 	}
 
 	if(prompt) free(prompt);
 	prompt = (char*)malloc(i);
 	if(!prompt) return 0;
-	strcpy(prompt,b);
+	strcpy(prompt, b);
 
 	return s;
 }
@@ -852,10 +852,10 @@ char *Node::ParsePrompt(char *s)
 char *Node::ParseSymbol(char *s)
 {
 	TRIMs char *b=s;
-	if(strncmp(s,"CONFIG_",7)) { printf("<CONFIG_> expected."); return 0; }
+	if(strncmp(s, "CONFIG_", 7)) { printf("<CONFIG_> expected."); return 0; }
 	NEXTs
 
-	Config = Symbols->AddSymbol(b,1);
+	Config = Symbols->AddSymbol(b, 1);
 	if(!Config) return 0;
 
 	return s;
@@ -882,7 +882,7 @@ reget:	// for 2.2 buggy Config.in
 		if(*b=='n') word=1; else
 		if(*b=='m') word=2; else
 		if(*b=='y') word=3; else goto next;
-		Symbols->Set(Config,word,this);
+		Symbols->Set(Config, word, this);
 		return s;
 	}
 
@@ -890,35 +890,35 @@ reget:	// for 2.2 buggy Config.in
 	{
 		if(type & NTT_INPUT) {
 			//printf("wordlookup not allowed in input node.\n"); return 0; 
-			printf("$lookup ignored in %s:%i\n",GetSource(),line);
+			printf("$lookup ignored in %s:%i\n", GetSource(), line);
 			while(*b && *b++!=' '); // skip past first space
 			goto reget;
 		}			
-		wordlookup = Symbols->AddSymbol(++b,0);
+		wordlookup = Symbols->AddSymbol(++b, 0);
 		word = Symbols->Get(wordlookup);
 
 #ifdef DEBUG_DEP_PRE_DEF
 		if(!Symbols->IsDefined(wordlookup)) // debug
 		{
 			printf("(word) %s dep on: %s which isn't defined.\n",
-					Symbols->GetSymbol(wordlookup),b);
+					Symbols->GetSymbol(wordlookup), b);
 		}
 #endif
 		if(word>3)
 		{
 			char *c = (char*)malloc(strlen((char*)word)+1);
-			strcpy(c,(char*)word); word = (uintptr_t)c;
+			strcpy(c, (char*)word); word = (uintptr_t)c;
 		}
-		Symbols->Set(Config,word,this);
+		Symbols->Set(Config, word, this);
 	}else
 	{
 next:		wordlookup=0;
 		char *c = (char*)malloc(strlen(b)+1);
-		strcpy(c,b); word = (uintptr_t)c;
-		Symbols->Set(Config,word,this);
+		strcpy(c, b); word = (uintptr_t)c;
+		Symbols->Set(Config, word, this);
 	}
 
-//	printf("<WORD>: %s\n",b);
+//	printf("<WORD>: %s\n", b);
 
 	return s;
 }
@@ -931,18 +931,18 @@ char *NodeDep::ParseDeps(char *s)
 
 	TRIMs
 next:
-	if(*s!='m' && strncmp(s,"$CONFIG_",8)) {
+	if(*s!='m' && strncmp(s, "$CONFIG_", 8)) {
 		printf("<$CONFIG_> or 'm' expected.\n"); return 0; }
 
 	b=s; NEXTs
 
 	int xx;
-	if(!AddDep(xx = Symbols->AddSymbol(b,0))) return 0;
+	if(!AddDep(xx = Symbols->AddSymbol(b, 0))) return 0;
 
 #ifdef DEBUG_DEP_PRE_DEF
 	if(!Symbols->IsDefined(xx))
 	{
-		printf("(dep) %s dep on: %s which isn't defined.\n",Symbols->GetSymbol(xx),b);
+		printf("(dep) %s dep on: %s which isn't defined.\n", Symbols->GetSymbol(xx), b);
 	}
 #endif
 
@@ -971,17 +971,17 @@ void Node::DefPrompt()
 
 	if(wordlookup)
 	{
-		snprintf(buf,190,"Def: %s = %s",
-				Symbols->GetSymbol(Config),Symbols->GetSymbol(wordlookup));
+		snprintf(buf, 190, "Def: %s = %s",
+				Symbols->GetSymbol(Config), Symbols->GetSymbol(wordlookup));
 	}else
 	{
 		if(word > 3)
 		{
-			snprintf(buf,190,"Def: %s = %s",Symbols->GetSymbol(Config),(char*)word);
+			snprintf(buf, 190, "Def: %s = %s", Symbols->GetSymbol(Config), (char*)word);
 		}else
 		{
 			char *conv = "0nmy";
-			snprintf(buf,190,"Def: %s = <%c>",Symbols->GetSymbol(Config),conv[word]);
+			snprintf(buf, 190, "Def: %s = <%c>", Symbols->GetSymbol(Config), conv[word]);
 		}
 	}
 
@@ -997,13 +997,13 @@ void Node::DefPrompt()
 #define PARSEWORD   s=ParseWord(s);   if(!s) return 0;
 #define PARSEDEPS   s=ParseDeps(s);   if(!s) return 0;
 
-bool NodeSource::Parse(char *s,int l)
+bool NodeSource::Parse(char *s, int l)
 {
 	line = l;
 	TRIMs
 	prompt=(char*)malloc(strlen(s)+1);
 	if(!prompt) return 0;
-	strcpy(prompt,s);
+	strcpy(prompt, s);
 
 	CfgFile cfile(this);
 	if(cfile.Open(s))
@@ -1012,48 +1012,48 @@ bool NodeSource::Parse(char *s,int l)
 		ret = cfile.Parse(this);
 		cfile.Close();
 		if(!ret) return 0;
-	} else { printf("NodeSource file open fail: %s\n",s); return 0; }
+	} else { printf("NodeSource file open fail: %s\n", s); return 0; }
 	return 1;
 }
 //---------------------------------------------------------
-bool NodeRoot::Parse(char *s,int l) { // mainmenu_name
+bool NodeRoot::Parse(char *s, int l) { // mainmenu_name
 	line = l; PARSEPROMPT return 1;
 }
-bool NodeMenu::Parse(char *s,int l) { // mainmenu_option - comment
+bool NodeMenu::Parse(char *s, int l) { // mainmenu_option - comment
 	line = l; PARSEPROMPT return 1;
 }
-bool NodeComment::Parse(char *s,int l) {
+bool NodeComment::Parse(char *s, int l) {
 	line = l; PARSEPROMPT return 1;
 }
 //---------------------------------------------------------
-bool NodeTri::Parse(char *s,int l) {
+bool NodeTri::Parse(char *s, int l) {
 	line = l; PARSEPROMPT PARSESYMBOL word=1; return 1;
 }
-bool NodeStr::Parse(char *s,int l) {
+bool NodeStr::Parse(char *s, int l) {
 	line = l; PARSEPROMPT PARSESYMBOL PARSEWORD return 1;
 }
 //---------------------------------------------------------
-bool NodeDep::Parse(char *s,int l) {
+bool NodeDep::Parse(char *s, int l) {
 	line = l; PARSEPROMPT PARSESYMBOL PARSEDEPS word=1; return 1;
 }
-bool NodeDef::Parse(char *s,int l) {
+bool NodeDef::Parse(char *s, int l) {
 	line = l; PARSESYMBOL PARSEWORD DefPrompt(); return 1;
 }
-bool NodeUnset::Parse(char *s,int l) {
+bool NodeUnset::Parse(char *s, int l) {
 	line = l; PARSESYMBOL word = 1; DefPrompt(); return 1;
 }
 //---------------------------------------------------------
-bool NodeChoice::Parse(char *s,int l) {
+bool NodeChoice::Parse(char *s, int l) {
 	line = l; PARSEPROMPT PARSESYMBOL word=1; return 1;
 }
 
-bool NodeChoiceP::Parse(char *s,int l)
+bool NodeChoiceP::Parse(char *s, int l)
 {
 	line = l;
 	PARSEPROMPT
 
 	char stop=0;
-	char *w1,*w2; // word 1+2
+	char *w1, *w2; // word 1+2
 
 	// WORD1
 	TRIMs
@@ -1067,7 +1067,7 @@ bool NodeChoiceP::Parse(char *s,int l)
 	while(1)
 	{
 		if(*s==stop || *s==' ' || *s=='\x09') { if(stop) { *s++=0; } break; }
-		if(*s==0) { printf("%c expected after /word/.\n",stop); return 0; }
+		if(*s==0) { printf("%c expected after /word/.\n", stop); return 0; }
 		s++;
 	}
 
@@ -1083,26 +1083,26 @@ bool NodeChoiceP::Parse(char *s,int l)
 
 		NodeChoice *n=new NodeChoice;
 		AddChild(n);
-		if(!n->Parse(w1,l)) return 0;
+		if(!n->Parse(w1, l)) return 0;
 
-		if(!strncmp(n->prompt,w2,strlen(w2)) && !bFoundY)
+		if(!strncmp(n->prompt, w2, strlen(w2)) && !bFoundY)
 		{
 			bFoundY=1;
 			n->word=3; n->DefaultChoice=1;
-			Symbols->Set(n->Config,3,n); // set default
+			Symbols->Set(n->Config, 3, n); // set default
 		}
 	}
 	if(!bFoundY && Child)
 	{
 		((NodeChoice*)Child)->word=3; // one must be == y
 		((NodeChoice*)Child)->DefaultChoice=1;
-		Symbols->Set(Child->GetConfig(),3,Child);
+		Symbols->Set(Child->GetConfig(), 3, Child);
 	}
 	return 1;
 }
 
 #ifdef USE_NCHOICE
-bool NodeChoiceNP::Parse(char *s,int l)
+bool NodeChoiceNP::Parse(char *s, int l)
 {
 	char *tmp;
 	line = l;
@@ -1119,20 +1119,20 @@ bool NodeChoiceNP::Parse(char *s,int l)
 
 		NodeChoice *n=new NodeChoice;
 		AddChild(n);
-		if(!n->Parse(tmp,l)) return 0;
+		if(!n->Parse(tmp, l)) return 0;
 
 		if(n->Config == Config && !bFoundY)
 		{
 			bFoundY=1;
 			n->word=3; n->DefaultChoice=1;
-			Symbols->Set(n->Config,3,n); // set default
+			Symbols->Set(n->Config, 3, n); // set default
 		}
 	}
 	if(!bFoundY && Child)
 	{
 		((NodeChoice*)Child)->word=3; // one must be == y
 		((NodeChoice*)Child)->DefaultChoice=1;
-		Symbols->Set(Child->GetConfig(),3,Child);
+		Symbols->Set(Child->GetConfig(), 3, Child);
 	}
 	Config = 0; word = 0;
 	return 1;
@@ -1141,16 +1141,16 @@ bool NodeChoiceNP::Parse(char *s,int l)
 
 //---------------------------------------------------------
 
-bool NodeIf::Parse(char *s,int l)
+bool NodeIf::Parse(char *s, int l)
 {
 	line = l;
 
 /*	prompt = (char*)malloc(strlen(s)+1);
 	if(!prompt) return 0;
-	strcpy(prompt,s);//*/
+	strcpy(prompt, s);//*/
 
-	int s1,s2,op,inv; // <op=1 - = 0 - !=>  <op=2 - -a 0 - -o>
-	char *b,stop;
+	int s1, s2, op, inv; // <op=1 - = 0 - !=>  <op=2 - -a 0 - -o>
+	char *b, stop;
 	while(1)
 	{
 		inv=0; op=0;
@@ -1159,20 +1159,20 @@ nextx:
 		if(*s=='!') { s++; inv=1; goto nextx; }
 		stop=0; GETWORDs(b)
 
-		if(strncmp(b,"$CONFIG_",8))
+		if(strncmp(b, "$CONFIG_", 8))
 		{
-			if(strcmp(b,"$ARCH"))
+			if(strcmp(b, "$ARCH"))
 			{
-				printf("$CONFIG_ or $ARCH expected.<%s>\n",b);
+				printf("$CONFIG_ or $ARCH expected.<%s>\n", b);
 				return 0;
 			}
 			s1 = 4; // $ARCH
 		}else{
-			s1 = Symbols->AddSymbol(++b,0);
+			s1 = Symbols->AddSymbol(++b, 0);
 #ifdef DEBUG_DEP_PRE_DEF
 			if(!Symbols->IsDefined(s1))
 			{
-				printf("(-if-) %s isn't defined.\n",b);
+				printf("(-if-) %s isn't defined.\n", b);
 			}
 #endif
 		}
@@ -1191,11 +1191,11 @@ nextx:
 		if(*b=='$')
 		{
 			b++;
-			s2 = Symbols->AddSymbol(b,0);
+			s2 = Symbols->AddSymbol(b, 0);
 #ifdef DEBUG_DEP_PRE_DEF
 			if(!Symbols->IsDefined(s2))
 			{
-				printf("(-if-s2) %s isn't defined.\n",b);
+				printf("(-if-s2) %s isn't defined.\n", b);
 			}
 #endif
 		}else
@@ -1209,15 +1209,15 @@ nextx:
 			{
 				// if op2 == string - add it to the symbol table
 				// and set both the name and value to string
-AddSym:				s2 = Symbols->AddSymbol(b,1);
-				Symbols->Set(s2,(uintptr_t)Symbols->GetSymbol(s2),this);
+AddSym:				s2 = Symbols->AddSymbol(b, 1);
+				Symbols->Set(s2, (uintptr_t)Symbols->GetSymbol(s2), this);
 			}
 		}
 
 		TRIMs
 
 		if(*s && (*s++!='-' && (*s!='a' && *s!='o'))) {
-			printf("-a or -o expected<%s>\n",s);
+			printf("-a or -o expected<%s>\n", s);
 			return 0;
 		}
 		if(*s=='a')
@@ -1225,21 +1225,21 @@ AddSym:				s2 = Symbols->AddSymbol(b,1);
 		if(*s)
 			s++;
 
-		if(!AddCondition(s1,s2,op))
+		if(!AddCondition(s1, s2, op))
 			return 0;
 
-//		 printf("%i %c %i %c ",s1,(op&1) ? '=' : '!',s2,(op&2) ? '&' : '|');
+//		 printf("%i %c %i %c ", s1, (op&1) ? '=' : '!', s2, (op&2) ? '&' : '|');
 
 	}
-//	printf("%i\n",Count);//*/
+//	printf("%i\n", Count);//*/
 	return 1;
 }
 
-bool NodeIf::AddCondition(int op1,int op2,int cond)
+bool NodeIf::AddCondition(int op1, int op2, int cond)
 {
 	if(Count>=CountLimit) // reallocate ?
 	{
-		CountLimit+=30; //printf("Reallocating if conds to: %i\n",CountLimit);
+		CountLimit+=30; //printf("Reallocating if conds to: %i\n", CountLimit);
 		Condition *c=(Condition*)malloc(sizeof(Condition)*CountLimit);
 		if(!c) return 0;
 
@@ -1288,11 +1288,11 @@ bool NodeRoot::Load(const char *ConfigFile)
 	if(!ConfigFile)
 	{
 		char buf[255];
-		snprintf(buf,254,"arch/%s/defconfig",GetArch());
+		snprintf(buf, 254, "arch/%s/defconfig", GetArch());
 
-		if(cfile.Open(".config",1))
+		if(cfile.Open(".config", 1))
 			goto _if_;
-		if(cfile.Open(buf,1))
+		if(cfile.Open(buf, 1))
 			goto _if_;
 			
 		printf("NodeRoot::Load: Couldn't Load .config or defconfig\n");
@@ -1306,7 +1306,7 @@ bool NodeRoot::Load(const char *ConfigFile)
 		ret = 1;
 		goto end;
 	}
-	if(cfile.Open(ConfigFile,0))
+	if(cfile.Open(ConfigFile, 0))
 	{
 _if_:		if(cfile.LoadSymbols(Symbols))
 		{
@@ -1317,7 +1317,7 @@ _if_:		if(cfile.LoadSymbols(Symbols))
 			printf("NodeRoot::Load: Config file parse error.\n");
 		cfile.Close();
 	}else{
-		printf("NodeRoot::Load: Couldn't Load config file. <%s>\n",ConfigFile);
+		printf("NodeRoot::Load: Couldn't Load config file. <%s>\n", ConfigFile);
 	}
 end:
 	if(ret) {
@@ -1341,21 +1341,21 @@ bool NodeRoot::Save(const char *ConfigFile)
 #ifndef NC24
 	return 0;
 #else
-	FILE *cfg=0,*cfgh=0;
+	FILE *cfg=0, *cfgh=0;
 	if(ConfigFile) // save user settings, else save to kernel
 	{
-		if(!*ConfigFile || !::strcmp(ConfigFile,".config") ||
+		if(!*ConfigFile || !::strcmp(ConfigFile, ".config") ||
 			(strlen(ConfigFile)>7 &&
-			 !::strcmp(&ConfigFile[strlen(ConfigFile)-8],"/.config")))//XXX XXX
+			 !::strcmp(&ConfigFile[strlen(ConfigFile)-8], "/.config")))//XXX XXX
 		{
-			printf("NodeRoot::Save: Invalid config filename: <%s>\n",ConfigFile);
+			printf("NodeRoot::Save: Invalid config filename: <%s>\n", ConfigFile);
 			return 0;
 		}
 
-		cfg = fopen(ConfigFile,"w");
+		cfg = fopen(ConfigFile, "w");
 		if(!cfg)
 		{
-			printf("NodeRoot::Save: Couldn't open <%s>\n",ConfigFile);
+			printf("NodeRoot::Save: Couldn't open <%s>\n", ConfigFile);
 			return 0;
 		}
 		cfgh=0;
@@ -1364,21 +1364,21 @@ bool NodeRoot::Save(const char *ConfigFile)
 		char fn[1024];
 
 		// setup the correct include link
-		strcpy(fn,"cd "); strcat(fn,Symbols->GetPath());
-		strcat(fn,"include;rm -f asm;ln -sf asm-");
-		strcat(fn,Symbols->GetArch()); strcat(fn," asm;mkdir -p linux/modules");
+		strcpy(fn, "cd "); strcat(fn, Symbols->GetPath());
+		strcat(fn, "include;rm -f asm;ln -sf asm-");
+		strcat(fn, Symbols->GetArch()); strcat(fn, " asm;mkdir -p linux/modules");
 		system(fn); // do it.
 
-		strcpy(fn,Symbols->GetPath()); strcat(fn,".config");
-		 cfg = fopen(fn,"w");
+		strcpy(fn, Symbols->GetPath()); strcat(fn, ".config");
+		 cfg = fopen(fn, "w");
 		if(!cfg)
 		{
 			printf("NodeRoot::Save: Couldn't open \".config\"\n");
 			return 0;
 		}
 
-		strcpy(fn,Symbols->GetPath()); strcat(fn,"include/linux/autoconf.h");
-		cfgh= fopen(fn,"w");
+		strcpy(fn, Symbols->GetPath()); strcat(fn, "include/linux/autoconf.h");
+		cfgh= fopen(fn, "w");
 		if(!cfg)
 		{
 			printf("NodeRoot::Save: Couldn't open <include/linux/autoconf.h>\n");
@@ -1391,9 +1391,9 @@ bool NodeRoot::Save(const char *ConfigFile)
 		"#define AUTOCONF_INCLUDED\n");
 	}
 
-	fprintf(cfg,"#\n# Automatically generated by the nconfig backend, don't edit\n#\n");
+	fprintf(cfg, "#\n# Automatically generated by the nconfig backend, don't edit\n#\n");
 
-	if(Child) Child->Save(cfg,cfgh);
+	if(Child) Child->Save(cfg, cfgh);
 
 	fclose(cfg);
 	if(cfgh) fclose(cfgh);
@@ -1403,9 +1403,9 @@ bool NodeRoot::Save(const char *ConfigFile)
 
 #ifndef NC24
 void Node::Load() {}
-void Node::Save(FILE *c,FILE *h) {}
+void Node::Save(FILE *c, FILE *h) {}
 void NodeParent::Load() {}
-void NodeParent::Save(FILE *c,FILE *h) {}
+void NodeParent::Save(FILE *c, FILE *h) {}
 int CfgFile::LoadSymbols(NodeSymbols *Symbols) { return 0; }
 #else
 	
@@ -1416,8 +1416,8 @@ int CfgFile::LoadSymbols(NodeSymbols *Symbols)
 	{
 		if(*LineStart == 0) continue;
 
-		if(strncmp("CONFIG_",LineStart,7))
-		{ printf("Load: CONFIG_ expected, not <%s>\n",LineStart); return 0; }
+		if(strncmp("CONFIG_", LineStart, 7))
+		{ printf("Load: CONFIG_ expected, not <%s>\n", LineStart); return 0; }
 
 		while(LineCurrent<LineNext)
 		{
@@ -1443,8 +1443,8 @@ int CfgFile::LoadSymbols(NodeSymbols *Symbols)
 			val=(uintptr_t)LineCurrent; // a hex/dec number
 		}
 
-		int s = Symbols->AddSymbol(LineStart,0);
-		if(Symbols->IsDefined(s) && s) Symbols->Set(s,val,0);
+		int s = Symbols->AddSymbol(LineStart, 0);
+		if(Symbols->IsDefined(s) && s) Symbols->Set(s, val, 0);
 	}
 	return 1;
 }
@@ -1457,14 +1457,14 @@ void Node::Load()
 	{
 		int p = state;
 		state &= ~(NS_SKIPPED | NS_DISABLED);
-		Set(Symbols->Get(Config),0);
+		Set(Symbols->Get(Config), 0);
 		prevword = word;
 		state = p;
 	}
 	if(Next) Next->Load();
 }
 
-void Node::Save(FILE *c,FILE *h)
+void Node::Save(FILE *c, FILE *h)
 {
 	char *sym;
 	if(state & (NS_SKIPPED | NS_DISABLED)) goto skipped;
@@ -1475,21 +1475,21 @@ void Node::Save(FILE *c,FILE *h)
 		uintptr_t ustr = Symbols->Get(Config);
 		if(ustr < 4)
 		{
-			char xx[4][2]={"","n","m","y"};
-			fprintf(c,"%s=%s\n",sym,xx[ustr]);
-			if(h) fprintf(h,"%s=%s\n",sym,xx[ustr]);
+			char xx[4][2]={"", "n", "m", "y"};
+			fprintf(c, "%s=%s\n", sym, xx[ustr]);
+			if(h) fprintf(h, "%s=%s\n", sym, xx[ustr]);
 		}else
 		{
 			char *str = (char*)ustr;
 			if(type & NTT_STRING)
 			{
-				fprintf(c,"%s=\"%s\"\n",sym,str);
-				if(h) fprintf(h,"#define %s \"%s\"\n",sym,str);
+				fprintf(c, "%s=\"%s\"\n", sym, str);
+				if(h) fprintf(h, "#define %s \"%s\"\n", sym, str);
 			}else{
-				fprintf(c,"%s=%s\n",sym,str);
+				fprintf(c, "%s=%s\n", sym, str);
 				if(type & NTT_HEX)
-				{ if(h) fprintf(h,"#define %s 0x%s\n",sym,str); } else
-				{ if(h) fprintf(h,"#define %s (%s)\n",sym,str); }
+				{ if(h) fprintf(h, "#define %s 0x%s\n", sym, str); } else
+				{ if(h) fprintf(h, "#define %s (%s)\n", sym, str); }
 			}
 		}
 	}else
@@ -1501,27 +1501,27 @@ void Node::Save(FILE *c,FILE *h)
 		switch(i)
 		{
 		case 1:
-			fprintf(c,"# %s is not set\n",sym);
-			if(h) fprintf(h,"#undef  %s\n",sym);
+			fprintf(c, "# %s is not set\n", sym);
+			if(h) fprintf(h, "#undef  %s\n", sym);
 			break;
 		case 2:
-			fprintf(c,"%s=m\n",sym);
-			if(h) { fprintf(h,"#undef  %s\n",sym);
-					fprintf(h,"#define %s_MODULE 1\n",sym); }
+			fprintf(c, "%s=m\n", sym);
+			if(h) { fprintf(h, "#undef  %s\n", sym);
+					fprintf(h, "#define %s_MODULE 1\n", sym); }
 			break;
 		case 3:
-			fprintf(c,"%s=y\n",sym);
-			if(h) fprintf(h,"#define %s 1\n",sym);
+			fprintf(c, "%s=y\n", sym);
+			if(h) fprintf(h, "#define %s 1\n", sym);
 			break;
 		}
 	}else
 	if(type == NT_COMMENT)
 	{
-		fprintf(c,"\n#\n# %s\n#\n",GetPrompt());
-		if(h) fprintf(h,"/*\n * %s\n */\n",GetPrompt());
+		fprintf(c, "\n#\n# %s\n#\n", GetPrompt());
+		if(h) fprintf(h, "/*\n * %s\n */\n", GetPrompt());
 	}
 skipped:
-	if(Next) Next->Save(c,h);
+	if(Next) Next->Save(c, h);
 }
 
 void NodeParent::Load()
@@ -1530,16 +1530,16 @@ void NodeParent::Load()
 	if(Next)  Next->Load();
 }
 
-void NodeParent::Save(FILE *c,FILE *h)
+void NodeParent::Save(FILE *c, FILE *h)
 {
 	if(type == NT_MENU && !(state & NS_SKIPPED))
 	{
-		fprintf(c,"\n#\n# %s\n#\n",GetPrompt());
-		if(h) fprintf(h,"/*\n * %s\n */\n",GetPrompt());
+		fprintf(c, "\n#\n# %s\n#\n", GetPrompt());
+		if(h) fprintf(h, "/*\n * %s\n */\n", GetPrompt());
 	}
 
-	if(Child) Child->Save(c,h);
-	if(Next)  Next->Save(c,h);
+	if(Child) Child->Save(c, h);
+	if(Next)  Next->Save(c, h);
 }
 
 void NodeIf::Load()
@@ -1549,11 +1549,11 @@ void NodeIf::Load()
 	if(Next)  Next->Load();
 }
 
-void NodeIf::Save(FILE *c,FILE *h)
+void NodeIf::Save(FILE *c, FILE *h)
 {
-	if(Child) Child->Save(c,h);
-	if(Else)  Else->Save(c,h);
-	if(Next)  Next->Save(c,h);
+	if(Child) Child->Save(c, h);
+	if(Else)  Else->Save(c, h);
+	if(Next)  Next->Save(c, h);
 }
 
 #endif //NC24
@@ -1563,10 +1563,10 @@ void NodeIf::Save(FILE *c,FILE *h)
 
 #ifdef NC24
 // hack for those redefinitions....
-bool NtfyFunc(Node *n,int flags,void *pv)
+bool NtfyFunc(Node *n, int flags, void *pv)
 {
 	// Node::Notify()
-	((enumNodes)pv)(n,NS_STATE,n->user);
+	((enumNodes)pv)(n, NS_STATE, n->user);
 	return 1;
 }
 #endif //NC24
@@ -1577,7 +1577,7 @@ void NodeRoot::Update(int i)
 	if(DepList) DepList->Update(1);
 #ifdef NC24
 	if(Symbols->Ntfy && !bLkc26)
-		Enumerate(NtfyFunc,NS_DOWN | NS_COLLAPSED,(void*)Symbols->Ntfy);
+		Enumerate(NtfyFunc, NS_DOWN | NS_COLLAPSED, (void*)Symbols->Ntfy);
 #endif //NC24
 }
 
@@ -1604,7 +1604,7 @@ void Node::Update(int i)
 {
 	if((i & 0xC) == 0xC) // skipped ?
 	{
-		Symbols->Reset(Config,this); // set to n
+		Symbols->Reset(Config, this); // set to n
 		Notify(NS_SKIP);
 		if(Next) Next->Update(i & ~2);
 		return;
@@ -1619,12 +1619,12 @@ void Node::Update(int i)
 			if(word>3)
 			{
 				char *c = (char*)malloc(strlen((char*)word)+1);
-				strcpy(c,(char*)word); word = (uintptr_t)c;
+				strcpy(c, (char*)word); word = (uintptr_t)c;
 			}
 		}
 		uintptr_t w = word;
 		if(w == 2 && !Symbols->HasModules()) w = 3;
-		Symbols->Set(Config,w,this);
+		Symbols->Set(Config, w, this);
 	}
 	if(i & 8) Notify(NS_UNSKIP);
 	Notify(NS_STATE);
@@ -1637,7 +1637,7 @@ void NodeDep::Update(int i)
 {
 	if((i & 0xC) == 0xC) // skipped ?
 	{
-		Symbols->Reset(Config,this); // set to n
+		Symbols->Reset(Config, this); // set to n
 		Notify(NS_SKIP);
 		if(Next) Next->Update(i & ~2);
 		return;
@@ -1647,13 +1647,13 @@ void NodeDep::Update(int i)
 
 	if(CheckDep(3) == 1)
 	{
-		Symbols->Reset(Config,this);
+		Symbols->Reset(Config, this);
 		Notify(NS_DISABLE);
 	}else
 	{
 		uintptr_t w = CheckDep(word);
 		if(w == 2 && !Symbols->HasModules()) w = 3;
-		Symbols->Set(Config,w,this);
+		Symbols->Set(Config, w, this);
 		Notify(NS_ENABLE);
 		Notify(NS_STATE);
 	}
@@ -1666,7 +1666,7 @@ void NodeParent::Update(int i)
 {
 	if((i & 0xC) == 0xC) // skipped ?
 	{
-		//Symbols->Reset(Config,this); ??? // set to n
+		//Symbols->Reset(Config, this); ??? // set to n
 		Notify(NS_SKIP);
 		if(Child) Child->Update(i & ~2);
 		if(Next) Next->Update(i & ~2);
@@ -1738,7 +1738,7 @@ void NodeChoice::Update(int i)
 	{
 		while(n)
 		{
-			Symbols->Reset(n->Config,n);
+			Symbols->Reset(n->Config, n);
 			n->Notify(NS_SKIP);
 			n=(NodeChoice*)n->Next;
 		}
@@ -1755,19 +1755,19 @@ void NodeChoice::Update(int i)
 				if(bFoundY)
 				{
 					n->word = 1; // n
-					Symbols->Set(n->Config,1,n);
+					Symbols->Set(n->Config, 1, n);
 					n->Notify(NS_STATE);
 				}
 				bFoundY = 1;
 			}
-			Symbols->Set(n->Config,n->word,n);
+			Symbols->Set(n->Config, n->word, n);
 			if(i & 8) n->Notify(NS_UNSKIP);
 			n=(NodeChoice*)n->Next;
 		}
 		if(!bFoundY)
 		{
 			Def->word = 3; // one must be -> y
-			Symbols->Set(Def->Config,3,Def);
+			Symbols->Set(Def->Config, 3, Def);
 			Def->Notify(NS_STATE);
 		}
 		return;
@@ -1822,7 +1822,7 @@ void Node::Notify(int flags)
 	}
 
 	// send the notification to the user
-	if(Symbols->Ntfy) Symbols->Ntfy(this,flags,user);
+	if(Symbols->Ntfy) Symbols->Ntfy(this, flags, user);
 }
 
 /* old version
@@ -1846,7 +1846,7 @@ void Node::Notify(int flags)
 	if(flags & NS_INVERT) state &= ~flags; else		state |= flags;
 end:
 	// send the notification to the user
-	if(Symbols->Ntfy) Symbols->Ntfy(this,flags,user);
+	if(Symbols->Ntfy) Symbols->Ntfy(this, flags, user);
 }//*/
 
 // Notify
@@ -1879,8 +1879,8 @@ uintptr_t NodeDep::CheckDep(uintptr_t w)
 
 bool NodeIf::If()
 {
-	uintptr_t op1,op2;
-	bool b=0,p=0; // bool prev
+	uintptr_t op1, op2;
+	bool b=0, p=0; // bool prev
 	int pcond=0; // prevcond
 	for(int i=0; i<Count; i++)
 	{
@@ -1889,7 +1889,7 @@ bool NodeIf::If()
 
 		if(op1 > 3 && op2 > 3)
 		{
-			b = !strcmp((char*)op1,(char*)op2);
+			b = !strcmp((char*)op1, (char*)op2);
 		}else{
 			if(op1 > 3 || op2 > 3) b=0; else b = (op1 == op2);
 		}
@@ -1958,7 +1958,7 @@ void NodeIf::AddChild(Node *n)
 //------------------------------------------------------------------------------------------###
 // Initialization
 
-int NodeRoot::Init_CmdLine(int argc,char *argv[],bool bSpc)
+int NodeRoot::Init_CmdLine(int argc, char *argv[], bool bSpc)
 {
 	char *Arch="i386";
 	char *Path="/usr/src/linux/";
@@ -1966,7 +1966,7 @@ int NodeRoot::Init_CmdLine(int argc,char *argv[],bool bSpc)
 	char cfg[255];
 
 	if(argc < 2) {
-		printf("Defaulting to: \"-P %s -A %s -C %s%s\"\n",Path,Arch,Path,".config");
+		printf("Defaulting to: \"-P %s -A %s -C %s%s\"\n", Path, Arch, Path, ".config");
 	}else{
 		for(int i=1; i<argc; i++)
 		{
@@ -1979,7 +1979,7 @@ int NodeRoot::Init_CmdLine(int argc,char *argv[],bool bSpc)
 			case 'S':
 			{
 				for(const char *p = GetNextArch(Path); p; p = GetNextArch())
-					printf("%s\n",p);
+					printf("%s\n", p);
 				return 4;
 			}
 			case 'h':
@@ -1996,22 +1996,22 @@ int NodeRoot::Init_CmdLine(int argc,char *argv[],bool bSpc)
 		{
 			if(*Config == '=')
 			{
-				snprintf(cfg,254,"%s%s%s",p,s,Config+1);
+				snprintf(cfg, 254, "%s%s%s", p, s, Config+1);
 				Config = cfg;
 			}
 			s=""; p=""; c=Config;
 		}
-		printf("Using: \"-P %s -A %s -C %s%s%s\"\n",Path,Arch,p,s,c);
+		printf("Using: \"-P %s -A %s -C %s%s%s\"\n", Path, Arch, p, s, c);
 	}
-	return Init(Arch,Path,Config,bSpc);
+	return Init(Arch, Path, Config, bSpc);
 }
 
 #ifdef LKC26
-void AddMenus(NodeParent *np,struct menu *mp);
+void AddMenus(NodeParent *np, struct menu *mp);
 #endif
 
 static char InitPath[255];
-int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool bSpc)
+int NodeRoot::Init(const char *Arch, const char *Path, const char *ConfigFile, bool bSpc)
 {
 	char fn[100];
 
@@ -2026,7 +2026,7 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 
 // add the first few nodes manually
 	// add the Symbols node 				-- XXX make 2.6 compatible
-	NodeSymbols *ns = new NodeSymbols(Arch,this);
+	NodeSymbols *ns = new NodeSymbols(Arch, this);
 	Next = ns; Symbols = ns; // Important Symbols is always Next to Root
 	ns->Symbols = ns; // !!!!
 	ns->bPromptSpaces = bSpc; // XXX REMOVE THIS line
@@ -2046,7 +2046,7 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 
 	// hack - use 'word' for NodeRoot help
 	char *rh = (char*)malloc(256);
-	snprintf(rh,254,"<file:%s>",Path);
+	snprintf(rh, 254, "<file:%s>", Path);
 	word = (uintptr_t)rh;
 	// ~Node will free it
 
@@ -2060,7 +2060,7 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 	CfgFile tmpf(this);
 	
 	InitPath[0]=0;
-	readlink("/proc/self/exe",InitPath,254);
+	readlink("/proc/self/exe", InitPath, 254);
 
 #ifdef LKC26
 // use this until I find a way to cleanup LKC
@@ -2068,7 +2068,7 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 	if(bInitLkc26)
 	{
 		 char buf[255];
-		 snprintf(buf,254,"%s -P %s -A %s",InitPath,Path,Arch);
+		 snprintf(buf, 254, "%s -P %s -A %s", InitPath, Path, Arch);
 		 system(buf);
 
 		 printf("Cannot reinit lkc26 at this time.");
@@ -2078,7 +2078,7 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 	}
 
 // open the architecture specific Kconfig and parse it				--- 2.6 ---
-	strcpy(fn,"arch/"); strcat(fn,Arch); strcat(fn,"/Kconfig");
+	strcpy(fn, "arch/"); strcat(fn, Arch); strcat(fn, "/Kconfig");
 	if(tmpf.TestOpen(fn)) //--> do the 2.6 kernel and RETURN
 	{
 		bInitLkc26 = true;
@@ -2090,8 +2090,8 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 		chdir(Path);
 
 		// setup env
-		setenv("ARCH",Arch,1);
-		//setenv("KERNELRELEASE",2.6.7xxx); ???
+		setenv("ARCH", Arch, 1);
+		//setenv("KERNELRELEASE", 2.6.7xxx); ???
 
 		// init it all
 		conf_parse(fn); // will exit() on error ---- should have a bool version.
@@ -2105,19 +2105,19 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 			//pmenu = &rootmenu;
 			line = rootmenu.lineno;
 		}
-		AddMenus(this,rootmenu.list);
+		AddMenus(this, rootmenu.list);
 		Update(1);
 		Symbols->bModified = false;
 
 		return 0;
 	}else{
 #ifndef NC24
-		strcpy(fn,"arch/"); strcat(fn,Arch); strcat(fn,"/config.in");
+		strcpy(fn, "arch/"); strcat(fn, Arch); strcat(fn, "/config.in");
 		if(tmpf.TestOpen(fn)) {
-			printf("Found only %s and 2.4.x support disabled, failing.\n",fn);
+			printf("Found only %s and 2.4.x support disabled, failing.\n", fn);
 			return 1;
 		}
-		printf("Can't find %sarch/%s/Kconfig, failing.\n",GetPath(),Arch);
+		printf("Can't find %sarch/%s/Kconfig, failing.\n", GetPath(), Arch);
 		return 2;
 #endif
 	}
@@ -2125,21 +2125,21 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 
 #ifdef NC24
 // open the architecture specific config.in and parse it		--- 2.4 ---
-	strcpy(fn,"arch/"); strcat(fn,Arch); strcat(fn,"/config.in");
+	strcpy(fn, "arch/"); strcat(fn, Arch); strcat(fn, "/config.in");
 	if(!tmpf.TestOpen(fn))
 	{
 #ifndef LKC26
-		strcpy(fn,"arch/"); strcat(fn,Arch); strcat(fn,"/Kconfig");
+		strcpy(fn, "arch/"); strcat(fn, Arch); strcat(fn, "/Kconfig");
 		if(tmpf.TestOpen(fn)) {
-			printf("Found only %s and 2.6.x support disabled, failing\n",fn);
+			printf("Found only %s and 2.6.x support disabled, failing\n", fn);
 			return 1;
 		}
 #endif
-		printf("Can't find %sarch/%s/Config.in, failing.\n",GetPath(),Arch);
+		printf("Can't find %sarch/%s/Config.in, failing.\n", GetPath(), Arch);
 		return 2;
 	}
 
-	if(!((Node*)n)->Parse(fn,0))
+	if(!((Node*)n)->Parse(fn, 0))
 	{
 		printf("Parsing failed.\n");
 		return 3;
@@ -2171,85 +2171,85 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 //------------------------------------------------------------------------------------------
 // Enumerate
 
-bool Node::Enumerate(enumNodes en,int flags,void *pv)
+bool Node::Enumerate(enumNodes en, int flags, void *pv)
 {
 	return 0;
-//	if(Next) if(!Next->_Enumerate(en,flags,pv)) return 0;
+//	if(Next) if(!Next->_Enumerate(en, flags, pv)) return 0;
 //	return 1;
 }
 
-bool Node::_Enumerate(enumNodes en,int flags,void *pv)
+bool Node::_Enumerate(enumNodes en, int flags, void *pv)
 {
-	if(!en(this,state,pv)) return 0;
-	if(Next) if(!Next->_Enumerate(en,flags,pv)) return 0;
+	if(!en(this, state, pv)) return 0;
+	if(Next) if(!Next->_Enumerate(en, flags, pv)) return 0;
 	return 1;
 }
 
 #ifdef NC24
-bool NodeDep::_Enumerate(enumNodes en,int flags,void *pv)
+bool NodeDep::_Enumerate(enumNodes en, int flags, void *pv)
 {
 	if(!(state & ~flags & NS_DISABLED))
-		if(!en(this,state,pv)) return 0;
-	if(Next) if(!Next->_Enumerate(en,flags,pv)) return 0;
+		if(!en(this, state, pv)) return 0;
+	if(Next) if(!Next->_Enumerate(en, flags, pv)) return 0;
 	return 1;
 }
 #endif
 
 // only used when a Parent is called directly
-bool NodeParent::Enumerate(enumNodes en,int flags,void *pv)
+bool NodeParent::Enumerate(enumNodes en, int flags, void *pv)
 {
 	if(!(state & ~flags & NS_COLLAPSED))
-		if(Child) if(!Child->_Enumerate(en,flags,pv)) return 0;
+		if(Child) if(!Child->_Enumerate(en, flags, pv)) return 0;
 	return 1;
 }
 
-bool NodeParent::_Enumerate(enumNodes en,int flags,void *pv)
+bool NodeParent::_Enumerate(enumNodes en, int flags, void *pv)
 {
-	if(!en(this,state,pv)) return 0;
+	if(!en(this, state, pv)) return 0;
 
 	if(!(state & ~flags & NS_COLLAPSED) && (type == NT_SOURCE || (flags & NS_DOWN)))
-		if(Child) if(!Child->_Enumerate(en,flags,pv)) return 0;
+		if(Child) if(!Child->_Enumerate(en, flags, pv)) return 0;
 
-	if(flags & NS_EXIT) if(!en(this,state | NS_EXIT,pv)) return 0;
-	if(Next) if(!Next->_Enumerate(en,flags,pv)) return 0;
+	if(flags & NS_EXIT) if(!en(this, state | NS_EXIT, pv)) return 0;
+	if(Next) if(!Next->_Enumerate(en, flags, pv)) return 0;
 	return 1;
 }
 
-bool NodeRoot::_Enumerate(enumNodes en,int flags,void *pv)
+bool NodeRoot::_Enumerate(enumNodes en, int flags, void *pv)
 {
-	if(!en(this,state,pv)) return 0;
-	if(Child) if(!Child->_Enumerate(en,flags,pv)) return 0;
-	if(flags & NS_EXIT) if(!en(this,state | NS_EXIT,pv)) return 0;
+	if(!en(this, state, pv)) return 0;
+	if(Child) if(!Child->_Enumerate(en, flags, pv)) return 0;
+	if(flags & NS_EXIT) if(!en(this, state | NS_EXIT, pv)) return 0;
 	return 1;
 }
 
 #ifdef NC24
-bool NodeIf::Enumerate(enumNodes en,int flags,void *pv)
+bool NodeIf::Enumerate(enumNodes en, int flags, void *pv)
 {
 	if(flags & NS_SKIPPED)
 	{
-		if(Child) if(!Child->_Enumerate(en,flags,pv)) return 0;
-		if(Else)  if(!Else->_Enumerate(en,flags,pv)) return 0;
+		if(Child) if(!Child->_Enumerate(en, flags, pv)) return 0;
+		if(Else)  if(!Else->_Enumerate(en, flags, pv)) return 0;
 	}else
-	if(If()) { if(Child) if(!Child->_Enumerate(en,flags,pv)) return 0; } else
-			 { if(Else)  if(!Else->_Enumerate(en,flags,pv)) return 0; }
+	if(If()) { if(Child) if(!Child->_Enumerate(en, flags, pv)) return 0; } else
+			 { if(Else)  if(!Else->_Enumerate(en, flags, pv)) return 0; }
 	return 1;
 }
 
-bool NodeIf::_Enumerate(enumNodes en,int flags,void *pv)
+bool NodeIf::_Enumerate(enumNodes en, int flags, void *pv)
 {
-	if(!en(this,state,pv)) return 0;
+	if(!en(this, state, pv)) return 0;
 
 	if(flags & NS_SKIPPED)
 	{
-		if(Child) if(!Child->_Enumerate(en,flags,pv)) return 0;
-		if(Else)  if(!Else->_Enumerate(en,flags,pv)) return 0;
+		if(Child) if(!Child->_Enumerate(en, flags, pv)) return 0;
+		if(Else)  if(!Else->_Enumerate(en, flags, pv)) return 0;
 	}else
-	if(If()) { if(Child) if(!Child->_Enumerate(en,flags,pv)) return 0; } else
-			 { if(Else)  if(!Else->_Enumerate(en,flags,pv)) return 0; }
+	if(If()) { if(Child) if(!Child->_Enumerate(en, flags, pv)) return 0; } else
+			 { if(Else)  if(!Else->_Enumerate(en, flags, pv)) return 0; }
 
-	if(flags & NS_EXIT) if(!en(this,state | NS_EXIT,pv)) return 0;
-	if(Next) if(!Next->_Enumerate(en,flags,pv)) return 0;
+	if(flags & NS_EXIT) if(!en(this, state | NS_EXIT, pv)) return 0;
+	if(Next) if(!Next->_Enumerate(en, flags, pv)) return 0;
 	return 1;
 }
 #endif //NC24
@@ -2263,61 +2263,61 @@ bool NodeIf::_Enumerate(enumNodes en,int flags,void *pv)
 // i = 4 = else
 // if type == IF and not a -child- then is MUST be -else-
 
-Node *Node::Search(SearchNodes sn,void *pv,int i)
+Node *Node::Search(SearchNodes sn, void *pv, int i)
 {
 	Node *n;
 	if (Next) {
-		if (sn(Next,pv)) {
+		if (sn(Next, pv)) {
 			return Next;
 		}
-		n = Next->Search(sn,pv,1);
+		n = Next->Search(sn, pv, 1);
 		if (n) {
 			return n;
 		}
 	}
 	if ((i&2) && Parent) {
-		return Parent->Search(sn,pv,(Parent->GetType() ==
+		return Parent->Search(sn, pv, (Parent->GetType() ==
 				NT_IF && Parent->IsMyChild(this)) ? 6:2);
 	}
 	return 0;
 }
 
-Node *NodeParent::Search(SearchNodes sn,void *pv,int i)
+Node *NodeParent::Search(SearchNodes sn, void *pv, int i)
 {
 	Node *n;
 	if ((i&1) && Child) {
-		if (sn(Child,pv)) {
+		if (sn(Child, pv)) {
 			return Child;
 		}
-		n = Child->Search(sn,pv,1);
+		n = Child->Search(sn, pv, 1);
 		if (n) {
 			return n;
 		}
 	}
 	if (Next) {
-		if (sn(Next,pv)) {
+		if (sn(Next, pv)) {
 			return Next;
 		}
-		n = Next->Search(sn,pv,1);
+		n = Next->Search(sn, pv, 1);
 		if (n) {
 			return n;
 		}
 	}
 	if ((i&2) && Parent) {
-		return Parent->Search(sn,pv,(Parent->GetType() ==
+		return Parent->Search(sn, pv, (Parent->GetType() ==
 				NT_IF && Parent->IsMyChild(this)) ? 6:2);
 	}
 	return 0;
 }
 
-Node *NodeRoot::Search(SearchNodes sn,void *pv,int i)
+Node *NodeRoot::Search(SearchNodes sn, void *pv, int i)
 {
 	Node *n;
 	if ((i&1) && Child) {
-		if (sn(Child,pv)) {
+		if (sn(Child, pv)) {
 			return Child;
 		}
-		n = Child->Search(sn,pv,1);
+		n = Child->Search(sn, pv, 1);
 		if (n) {
 			return n;
 		}
@@ -2326,38 +2326,38 @@ Node *NodeRoot::Search(SearchNodes sn,void *pv,int i)
 }
 
 #ifdef NC24
-Node *NodeIf::Search(SearchNodes sn,void *pv,int i)
+Node *NodeIf::Search(SearchNodes sn, void *pv, int i)
 {
 	Node *n;
 	if ((i&1) && Child) {
-		if (sn(Child,pv)) {
+		if (sn(Child, pv)) {
 			return Child;
 		}
-		n = Child->Search(sn,pv,1);
+		n = Child->Search(sn, pv, 1);
 		if (n) {
 			return n;
 		}
 	}
 	if ((i&5) && Else) {
-		if (sn(Else,pv)) {
+		if (sn(Else, pv)) {
 			return Else;
 		}
-		n = Else->Search(sn,pv,1);
+		n = Else->Search(sn, pv, 1);
 		if (n) {
 			return n;
 		}
 	}
 	if (Next) {
-		if (sn(Next,pv)) {
+		if (sn(Next, pv)) {
 			return Next;
 		}
-		n = Next->Search(sn,pv,1);
+		n = Next->Search(sn, pv, 1);
 		if (n) {
 			return n;
 		}
 	}
 	if ((i&2) && Parent) {
-		return Parent->Search(sn,pv,(Parent->GetType() == 
+		return Parent->Search(sn, pv, (Parent->GetType() == 
 				NT_IF && Parent->IsMyChild(this)) ? 6:2);
 	}
 	return 0;
@@ -2390,19 +2390,19 @@ const char *Node::GetStr()
 	}
 }
 
-uintptr_t Node::Set(const char *s,int updt)
+uintptr_t Node::Set(const char *s, int updt)
 {
 	if(type & NTT_STR)
-		 return Set((uintptr_t)s,updt);
+		 return Set((uintptr_t)s, updt);
 	else
 	if(type & NTT_NMY)
 	{
 		if(!*(s+1))
 		switch(*s)
 		{
-		case 'n': case 'N': Set(1,updt);
-		case 'm': case 'M': Set(2,updt);
-		case 'y': case 'Y': Set(3,updt);
+		case 'n': case 'N': Set(1, updt);
+		case 'm': case 'M': Set(2, updt);
+		case 'y': case 'Y': Set(3, updt);
 		default: return 0;
 		}
 	}
@@ -2422,7 +2422,7 @@ uintptr_t Node::Advance(int updt)
 		if(!Symbols->HasModules()) word = 3;
 		if(type & NTT_BOOL) word = 3;
 	}
-	Symbols->Set(Config,word,this);
+	Symbols->Set(Config, word, this);
 	if(updt) IUpdate(); else Notify(NS_STATE);
 	return word;
 }
@@ -2435,11 +2435,11 @@ uintptr_t Node::Get()
 		if(word == 2 && !Symbols->HasModules()) return 3; else return word;
 
 //	uintptr_t w = Symbols->Get(Config);
-//	if((type & NTT_STR) && w<4 && w) { printf("invalid string value %i from: %s\n",w,prompt); w=0; }
+//	if((type & NTT_STR) && w<4 && w) { printf("invalid string value %i from: %s\n", w, prompt); w=0; }
 //	return w;
 }
 
-uintptr_t Node::Set(uintptr_t w,int updt)
+uintptr_t Node::Set(uintptr_t w, int updt)
 {
 	// only input nodes is allowed to use Set
 	if(!(type & NTT_INPUT)) return 0;
@@ -2457,14 +2457,14 @@ uintptr_t Node::Set(uintptr_t w,int updt)
 			if(!Symbols->HasModules()) w = 3;
 		}
 
-		word = w; Symbols->Set(Config,w,this);
+		word = w; Symbols->Set(Config, w, this);
 	}else
 	if(type & NTT_STR) // hex int str
 	{
 		if(w < 4) return word;
 
 		char *c = (char*)malloc(strlen((char*)w)+2);
-		strcpy(c,(char*)w);
+		strcpy(c, (char*)w);
 
 		// validate numbers
 		if(type & NTT_HEX)
@@ -2508,14 +2508,14 @@ uintptr_t Node::Set(uintptr_t w,int updt)
 		}
 
 		// same as previous ?
-		if (word < 4 || !strcmp(c,(char*)word)) {
+		if (word < 4 || !strcmp(c, (char*)word)) {
 			prevword = (uintptr_t)c;
 		}
 		if(word > 4) {
 			free((void*)word);
 		}
 		word = (uintptr_t)c;
-		Symbols->Set(Config,word,this);
+		Symbols->Set(Config, word, this);
 	}
 	if (updt) {
 		IUpdate();
@@ -2540,7 +2540,7 @@ uintptr_t NodeDep::Advance(int updt)
 	}
 	if(word != CheckDep(word)) word = 1;
 
-	Symbols->Set(Config,word,this);
+	Symbols->Set(Config, word, this);
 	if(updt) IUpdate(); else Notify(NS_STATE);
 	return word;
 }
@@ -2554,14 +2554,14 @@ uintptr_t NodeDep::Get()
 	}
 
 /*	// CheckDep should not be needed here... just making sure...
-	uintptr_t p,w; p = w = Symbols->Get(Config);
+	uintptr_t p, w; p = w = Symbols->Get(Config);
 	w = CheckDep(w);
-	if(w!=p) printf("NodeDep::Get: Inconsistency value changed from: %i to %i\n",p,w);
-	if(word!=p) printf("NodeDep::Get: Inconsistency2 value get: %i word %i\n",p,word);
+	if(w!=p) printf("NodeDep::Get: Inconsistency value changed from: %i to %i\n", p, w);
+	if(word!=p) printf("NodeDep::Get: Inconsistency2 value get: %i word %i\n", p, word);
 	return w;//*/
 }
 
-uintptr_t NodeDep::Set(uintptr_t w,int updt)
+uintptr_t NodeDep::Set(uintptr_t w, int updt)
 {
 	// only input nodes is allowed to use Set
 //	if(!(type & NTT_INPUT)) return 0; // will this ever happen ???
@@ -2579,7 +2579,7 @@ uintptr_t NodeDep::Set(uintptr_t w,int updt)
 			if(!Symbols->HasModules()) w = 3;
 		}
 		w = CheckDep(w); // check deps
-		word = w; Symbols->Set(Config,w,this);
+		word = w; Symbols->Set(Config, w, this);
 	}else
 	if(type & NTT_STR) // hex int str
 	{
@@ -2593,10 +2593,10 @@ uintptr_t NodeChoice::Advance(int updt)
 {
 	if(state & NS_SKIPPED) return 0;
 	if(word == 3) return 3; // is it already y ?
-	return Set(3,updt);
+	return Set(3, updt);
 }
 
-uintptr_t NodeChoice::Set(uintptr_t w,int updt)
+uintptr_t NodeChoice::Set(uintptr_t w, int updt)
 {
 	// only input nodes is allowed to use Set
 //	if(!(type & NTT_INPUT)) return 0; // will this ever happen ???
@@ -2614,14 +2614,14 @@ uintptr_t NodeChoice::Set(uintptr_t w,int updt)
 		if(n->word > 1) // m y
 		{
 			n->word = 1; // n
-			Symbols->Set(n->GetConfig(),1,n);
+			Symbols->Set(n->GetConfig(), 1, n);
 			n->Notify(NS_STATE);
 		}
 		n=(NodeChoice*)n->Next;
 	}
 	if(word == 3) return 3; // already set to 3
 
-	word = 3; Symbols->Set(Config,3,this);
+	word = 3; Symbols->Set(Config, 3, this);
 
 	Notify(NS_STATE);
 	if(updt) IUpdate();
@@ -2650,9 +2650,9 @@ bool NodeParent::IsMyChild(Node *c)
 	return 0;
 }
 
-NodeParent *Node::GetParent(unsigned int tp,unsigned int flags)
+NodeParent *Node::GetParent(unsigned int tp, unsigned int flags)
 {
-	NodeParent *pp,*p = Parent;
+	NodeParent *pp, *p = Parent;
 	pp=(NodeParent*)this; // if !p pp == NodeRoot ALWAYS
 	if(tp==0 && flags==(uintptr_t)~0) flags = 0; // find the first parent
 
@@ -2731,7 +2731,7 @@ const char *NodeRoot::GetFirstArch()
 
 const char *NodeRoot::GetNextArch(char *path)
 {
-	static int max,n;
+	static int max, n;
 	static struct dirent **nl = 0;
 
 	// new search ? - free old first
@@ -2761,12 +2761,12 @@ next:		free(nl[n]);
 
 	// start a new search
 	char buf[255];
-	strcpy(buf,path);
-	if(buf[strlen(buf)-1] !='/') strcat(buf,"/");
-	strcat(buf,"arch");
+	strcpy(buf, path);
+	if(buf[strlen(buf)-1] !='/') strcat(buf, "/");
+	strcat(buf, "arch");
 
 	n = 0;
-	max = scandir(buf,&nl,0,alphasort);
+	max = scandir(buf, &nl, 0, alphasort);
 	if(max < 0){
 		 return 0;
 	}else if(!max){
@@ -2796,7 +2796,7 @@ void strcutr(char *s, char c)
 char *NodeRoot::GetHelpH(Node *n)
 {
 	FreeH();
-	int max = 255; // should be plenty for the prompt,symbol and filename
+	int max = 255; // should be plenty for the prompt, symbol and filename
 	char *help = n->GetHelp();
 	if(!help) help = "No help available.";
 	max += strlen(help);
@@ -2805,22 +2805,22 @@ char *NodeRoot::GetHelpH(Node *n)
 	char *m = (char*)malloc(max+1);
 	if(!m) return 0;
 
-	snprintf(m,max,"%s\n%s = %s\n<file:%s%s>:%i\n\n%s\n",
-			n->GetPrompt(),n->GetSymbol(),n->GetStr(),GetPath(),n->GetSource(),n->GetLine(),help);
+	snprintf(m, max, "%s\n%s = %s\n<file:%s%s>:%i\n\n%s\n",
+			n->GetPrompt(), n->GetSymbol(), n->GetStr(), GetPath(), n->GetSource(), n->GetLine(), help);
 
 	// check for a README file
 	CfgFile f(this);
 	char buf[256];
 
-	strcpy(buf,InitPath);
-	strcutr(buf,'/');
-	strcutr(buf,'/');
-	strcat(buf,"/README");
+	strcpy(buf, InitPath);
+	strcutr(buf, '/');
+	strcutr(buf, '/');
+	strcat(buf, "/README");
 	
 	if(f.TestOpen(buf)) {
-		sprintf(m+strlen(m),"\n<file:%s>\n",buf);
+		sprintf(m+strlen(m), "\n<file:%s>\n", buf);
 	}else{
-		strcat(m+strlen(m),"\nCouldn't find the README.\n");
+		strcat(m+strlen(m), "\nCouldn't find the README.\n");
 	}
 	pHelpMem = m;
 	return m;
@@ -2829,14 +2829,14 @@ char *NodeRoot::GetHelpH(Node *n)
 char *NodeRoot::GetFileH(const char *fn)
 {
 	FreeH();
-	int f = open(fn,O_RDONLY);
+	int f = open(fn, O_RDONLY);
 	if(f == -1)
 	{
 		return GetDirH(fn); // maybe it is a dir ?
 	}
 
 	struct stat st;
-	if(fstat(f,&st) == -1) return 0;
+	if(fstat(f, &st) == -1) return 0;
 
 	if(S_ISDIR(st.st_mode))
 	{
@@ -2850,7 +2850,7 @@ char *NodeRoot::GetFileH(const char *fn)
 	p[st.st_size]=0;
 	p[st.st_size+1]=0;
 
-	if(read(f,p,st.st_size) != st.st_size)
+	if(read(f, p, st.st_size) != st.st_size)
 	{
 		free(p); close(f); return 0;
 	}
@@ -2863,9 +2863,9 @@ char *NodeRoot::GetFileH(const char *fn)
 char *NodeRoot::GetDirH(const char *dn)
 {
 	FreeH();
-	char *p=0,*t=0;
+	char *p=0, *t=0;
 	char buf[250];
-	strcpy(buf,dn);
+	strcpy(buf, dn);
 	int l = strlen(buf) - 1;
 	if(buf[l] == '/') buf[l] = 0;
 
@@ -2902,7 +2902,7 @@ dirit:
 		t+=strlen(t);
 		if(t-p > 7600)
 		{
-			snprintf(t,100,"buffer overflow. (almost)\n");
+			snprintf(t, 100, "buffer overflow. (almost)\n");
 			break;
 		}
 	}
@@ -2911,23 +2911,23 @@ dirit:
 	return p;
 }
 
-char *NodeRoot::GetLinkFileH(const char *line,int x,char **start,char **end,int *ll,char **fn)
+char *NodeRoot::GetLinkFileH(const char *line, int x, char **start, char **end, int *ll, char **fn)
 {
-	char *d1,*d2; // temp stores if start/end == 0
+	char *d1, *d2; // temp stores if start/end == 0
 	if(!end) end = &d2;
 	if(!start) start = &d1;
 	
-	char *p = GetLink(line,x,start,end);
+	char *p = GetLink(line, x, start, end);
 	if(!p) return 0;
 	if(fn) *fn = p;
 
 /*	//Debug code
 	const char *px;
-	char buf[1000],*d=buf;
+	char buf[1000], *d=buf;
 	for(px=*start; px <= *end && *px != '\n' && *px; ) *d++ = *px++; *d=0; 
-	fprintf(stderr,"-->%s\n",buf);
+	fprintf(stderr, "-->%s\n", buf);
 	if(p)
-		fprintf(stderr,"==>%s\n",p);*/
+		fprintf(stderr, "==>%s\n", p);*/
 
 	// get line, if there is one
 	int l = 0;
@@ -2961,17 +2961,17 @@ void NodeRoot::SetAutoFreeH(bool b)
 	bAutoFreeH = b;
 }
 
-char *NodeRoot::GetLink(const char *line,int x,char **start,char **end)
+char *NodeRoot::GetLink(const char *line, int x, char **start, char **end)
 {
 	const int Links = 4;
 	char *LinkStr[Links][2] =
-		{{"<file:",">"},
-		{"Documentation/",".txt"},
-		{"source","Kconfig"},
-		{"source","Config.in"}};
-	int LinkLen[Links][4] = {{6,6,1,0},{14,0,4,4},{6,6,7,7},{6,6,9,9}}; //start,end,include_end
+		{{"<file:", ">"},
+		{"Documentation/", ".txt"},
+		{"source", "Kconfig"},
+		{"source", "Config.in"}};
+	int LinkLen[Links][4] = {{6, 6, 1, 0}, {14, 0, 4, 4}, {6, 6, 7, 7}, {6, 6, 9, 9}}; //start, end, include_end
 
-	char *d1,*d2; // temp stores if start/end == 0
+	char *d1, *d2; // temp stores if start/end == 0
 	if(!end) end = &d2;
 	if(!start) start = &d1;
 
@@ -2981,14 +2981,14 @@ char *NodeRoot::GetLink(const char *line,int x,char **start,char **end)
 
 		for(int i=0; i<Links; i++)
 		{
-			if(!strncmp(d,LinkStr[i][0],LinkLen[i][0]))
+			if(!strncmp(d, LinkStr[i][0], LinkLen[i][0]))
 			{
 				*start = d;
 				for(char *c = d; ;c++)
 //=============================================================================
 {
 	if(*c == '\n' || !*c) break;
-	if(!strncmp(c,LinkStr[i][1],LinkLen[i][2])) // found
+	if(!strncmp(c, LinkStr[i][1], LinkLen[i][2])) // found
 	{
 		*end = c + LinkLen[i][2];
 		char *stop = c + LinkLen[i][3];
@@ -3035,8 +3035,8 @@ char *NodeRoot::GetLink(const char *line,int x,char **start,char **end)
 
 			// is path specified ?
 			static char buf2[255]; buf2[0]=0;
-			if(*dt != '/') strcpy(buf2,GetPath());
-			strcat(buf2,dt);
+			if(*dt != '/') strcpy(buf2, GetPath());
+			strcat(buf2, dt);
 			return buf2;
 		} else break;
 	} // if(strncmp)
@@ -3074,7 +3074,7 @@ Node *NodeRoot::GetDepTree()
 Node *Node::GetDepTree() { return 0; }
 void Node::GetDepTree(NodeDListP *d) {}
 #else
-NodeDList::NodeDList(char *s,int c)
+NodeDList::NodeDList(char *s, int c)
 {
 	type = NT_COMMENT;
 	Config = c;
@@ -3082,7 +3082,7 @@ NodeDList::NodeDList(char *s,int c)
 
 	prompt = (char*)malloc(strlen(s)+1);
 	if(!prompt) return;
-	strcpy(prompt,s);
+	strcpy(prompt, s);
 }
 
 NodeDList::NodeDList(Node *n)
@@ -3095,7 +3095,7 @@ NodeDList::NodeDList(Node *n)
 
 	char *p = (char*)malloc(strlen(prompt)+1);
 	if(!p) { prompt = 0; return; }
-	strcpy(p,prompt); prompt = p;
+	strcpy(p, prompt); prompt = p;
 }
 
 void NodeDList::Update(int i)
@@ -3112,10 +3112,10 @@ void NodeDList::Update(int i)
 	if(Next) Next->Update();
 }
 
-bool NodeDList::_Enumerate(enumNodes en,int flags,void *pv)
+bool NodeDList::_Enumerate(enumNodes en, int flags, void *pv)
 {
-	if(!en(this,GetState(),pv)) return 0;
-	if(Next) if(!Next->_Enumerate(en,flags,pv)) return 0;
+	if(!en(this, GetState(), pv)) return 0;
+	if(Next) if(!Next->_Enumerate(en, flags, pv)) return 0;
 	return 1;
 }
 
@@ -3159,7 +3159,7 @@ struct BDep
 	NodeDListP *d;
 };
 
-bool BuildDeps(Node *n,int flags,void *pv)
+bool BuildDeps(Node *n, int flags, void *pv)
 {
 	BDep *d = (BDep*)pv;
 	if(n->GetConfig() == d->Config) n->GetDepTree(d->d);
@@ -3172,8 +3172,8 @@ void NodeDListP::CheckOutConfig(int c)
 	if(!Symbols->IsDefined(c))
 	{
 		char buf[80];
-		snprintf(buf,80,"Not Def: %s",Symbols->GetSymbol(c));
-		NodeDList *l = new NodeDList(buf,c); AddChild(l);
+		snprintf(buf, 80, "Not Def: %s", Symbols->GetSymbol(c));
+		NodeDList *l = new NodeDList(buf, c); AddChild(l);
 		return;
 	}
 
@@ -3186,7 +3186,7 @@ void NodeDListP::CheckOutConfig(int c)
 	}
 
 	BDep bd; bd.d=this; bd.Config = c;
-	Root->Enumerate(BuildDeps,NS_ALL,&bd);
+	Root->Enumerate(BuildDeps, NS_ALL, &bd);
 }
 
 Node *Node::GetDepTree()
@@ -3201,7 +3201,7 @@ Node *Node::GetDepTree()
 	if(Config > 4 && type != NT_ROOT)
 	{
 		BDep bd; bd.d=p; bd.Config = Config;
-		GetParent(NT_ROOT)->Enumerate(BuildDeps,NS_ALL,&bd);
+		GetParent(NT_ROOT)->Enumerate(BuildDeps, NS_ALL, &bd);
 	}
 	return p;
 }
@@ -3289,7 +3289,7 @@ void ClearSym()
 	symindex = 0;
 }
 
-int GetSyms(struct expr *dep,LkcDep *ld);
+int GetSyms(struct expr *dep, LkcDep *ld);
 void NodeLkc26::SearchExpr(LkcDep *ld)
 {
 	type |= NTT_PARENT;
@@ -3299,13 +3299,13 @@ void NodeLkc26::SearchExpr(LkcDep *ld)
 		if(psym->prop)
 		{
 			ldd = *ld; ldd.sym = psym; ldd.p = this;
-			GetSyms(psym->prop->visible.expr,&ldd);
+			GetSyms(psym->prop->visible.expr, &ldd);
 		}
 
 		 if(psym->rev_dep.expr)
 		{
 			ldd = *ld; ldd.sym = psym; ldd.p = this;
-			GetSyms(psym->rev_dep.expr,&ldd);
+			GetSyms(psym->rev_dep.expr, &ldd);
 		}
 
 		// depcheck defaults for defines
@@ -3313,12 +3313,12 @@ void NodeLkc26::SearchExpr(LkcDep *ld)
 		{
 			struct property *p;
 			ldd = *ld; ldd.sym = psym; ldd.p = this;
-			for_all_defaults(psym,p) GetSyms(p->expr,&ldd);
+			for_all_defaults(psym, p) GetSyms(p->expr, &ldd);
 		}
 	}
 }
 
-bool BuildLkcDeps(Node *nn,int flags,void *pv)
+bool BuildLkcDeps(Node *nn, int flags, void *pv)
 {
 	NodeLkc26 *n = (NodeLkc26*)nn;
 	LkcDep *ld = (LkcDep*)pv;
@@ -3326,27 +3326,27 @@ bool BuildLkcDeps(Node *nn,int flags,void *pv)
 	{
 		ld->bFound = 1;
 		if(!AddSym(n->pmenu->sym)) return 0;
-		NodeLkc26 *nn = new NodeLkc26(ld->p,n->pmenu);
+		NodeLkc26 *nn = new NodeLkc26(ld->p, n->pmenu);
 		nn->SearchExpr(ld);
 	}
 	return 1;
 }
 
-void NodeLkc26::SearchSyms(struct symbol *s,LkcDep *ld)
+void NodeLkc26::SearchSyms(struct symbol *s, LkcDep *ld)
 {
 	if(!s) return;
 	if(!CheckSym(s)) return;
 
 	ld->sym = s; ld->bFound = 0;
-//	printf("searching %s - %s\n",s->name,ld->sym ? ld->sym->name:0);
-	ld->ne->_Enumerate(BuildLkcDeps,NS_ALL,ld);
+//	printf("searching %s - %s\n", s->name, ld->sym ? ld->sym->name:0);
+	ld->ne->_Enumerate(BuildLkcDeps, NS_ALL, ld);
 
 	if(!ld->bFound)
 	{
 		//printf("Didn't find a node.\n");
 		int i;
 		struct symbol *ss=0;
-		for_all_symbols(i,ss)
+		for_all_symbols(i, ss)
 		if(ss == ld->sym)
 		{
 			if(!AddSym(ss)) return; // already done
@@ -3354,12 +3354,12 @@ void NodeLkc26::SearchSyms(struct symbol *s,LkcDep *ld)
 		}
 		return; // sym not found eg: n m y
 found:
-		NodeLkc26 *n = new NodeLkc26(ld->p,ss);
+		NodeLkc26 *n = new NodeLkc26(ld->p, ss);
 		if(ss) n->SearchExpr(ld);
 	}
 }
 
-int NodeLkc26::GetSyms(struct expr *dep,LkcDep *ld)
+int NodeLkc26::GetSyms(struct expr *dep, LkcDep *ld)
 {
 
 		if (!dep)
@@ -3368,18 +3368,18 @@ int NodeLkc26::GetSyms(struct expr *dep,LkcDep *ld)
 		switch (dep->type) {
 		case E_AND:
 		case E_OR:
-				return GetSyms(dep->left.expr,ld) ||
-						GetSyms(dep->right.expr,ld);
+				return GetSyms(dep->left.expr, ld) ||
+						GetSyms(dep->right.expr, ld);
 		case E_SYMBOL:
-				SearchSyms(dep->left.sym,ld);
+				SearchSyms(dep->left.sym, ld);
 				return 0;
 		case E_EQUAL:
 		case E_UNEQUAL:
-				SearchSyms(dep->left.sym,ld);
-				SearchSyms(dep->right.sym,ld);
+				SearchSyms(dep->left.sym, ld);
+				SearchSyms(dep->right.sym, ld);
 				return 0;
 		case E_NOT:
-				return GetSyms(dep->left.expr,ld);
+				return GetSyms(dep->left.expr, ld);
 		default:
 				;
 		}
@@ -3407,15 +3407,15 @@ Node *NodeLkc26::GetDepTree()
 	{
 		if(pmenu->prompt)
 		{
-			ld.p = new NodeLkc26(p,pmenu);
-			GetSyms(pmenu->prompt->visible.expr,&ld);
+			ld.p = new NodeLkc26(p, pmenu);
+			GetSyms(pmenu->prompt->visible.expr, &ld);
 		}
 	}else
 	{
 		// do this instead SearchExpr in case of multiple defines ???
 		// or is all the symbol deps combined ???
-		SearchSyms(ld.sym,&ld);
-		//NodeLkc26 *nn = new NodeLkc26(p,pmenu);
+		SearchSyms(ld.sym, &ld);
+		//NodeLkc26 *nn = new NodeLkc26(p, pmenu);
 		//nn->SearchExpr(&ld);
 	}
 	return p;
@@ -3427,23 +3427,23 @@ Node *NodeLkc26::GetDepTree()
 // include all choice items in deplist ?
 #define XREFCHOICE
 
-void AddMenus(NodeParent *np,struct menu *mp)
+void AddMenus(NodeParent *np, struct menu *mp)
 {
 	struct menu *m;
 	for(m = mp; m; m = m->next)
 	{
 		if(m->prompt || m->sym)
 		{
-			NodeLkc26 *n = new NodeLkc26(np,m);
+			NodeLkc26 *n = new NodeLkc26(np, m);
 #ifdef XREFCHOICE
 			if(n->GetType() != NT_CHOICEP)
 #endif
-				if(m->list) AddMenus(n,m->list);
+				if(m->list) AddMenus(n, m->list);
 		}
 	}
 }
 
-NodeLkc26::NodeLkc26(NodeParent *np,struct symbol *s)
+NodeLkc26::NodeLkc26(NodeParent *np, struct symbol *s)
 {
 	np->AddChild(this);
 
@@ -3456,7 +3456,7 @@ NodeLkc26::NodeLkc26(NodeParent *np,struct symbol *s)
 	{
 		char buf[200];
 		const char *p = sym_get_string_value(s);
-		snprintf(buf,198,"Def: %s = %s",s->name,p);
+		snprintf(buf, 198, "Def: %s = %s", s->name, p);
 		if(s->prop) line = s->prop->lineno; else line = 0;
 		 SetPrompt(buf);
 		//if(!*(p+1)) switch(*p) { case 'n': case 'm': case 'y': type |= NTT_INPUT; }
@@ -3466,7 +3466,7 @@ NodeLkc26::NodeLkc26(NodeParent *np,struct symbol *s)
 	}
 }
 
-NodeLkc26::NodeLkc26(NodeParent *np,struct menu *m)
+NodeLkc26::NodeLkc26(NodeParent *np, struct menu *m)
 {
 	np->AddChild(this);
 
@@ -3479,7 +3479,7 @@ NodeLkc26::NodeLkc26(NodeParent *np,struct menu *m)
 
 	// debug
 	if(!psym && (!m || !m->prompt)) { printf("sym:0 list:%x - %s\n",
-			(int)m->list,menu_get_prompt(m)); return; }
+			(int)m->list, menu_get_prompt(m)); return; }
 
 	if(m && !m->prompt)
 	{
@@ -3490,7 +3490,7 @@ NodeLkc26::NodeLkc26(NodeParent *np,struct menu *m)
 	if(psym && !sym_has_value(psym))
 	{
 		 char buf[200];
-		snprintf(buf,198,"%s %s",menu_get_prompt(m),"(NEW)");
+		snprintf(buf, 198, "%s %s", menu_get_prompt(m), "(NEW)");
 		SetPrompt(buf);
 		bNew = 1;
 	}else {
@@ -3524,7 +3524,7 @@ NodeLkc26::NodeLkc26(NodeParent *np,struct menu *m)
 	{
 		type = NT_CHOICEP;
 #ifdef XREFCHOICE
-		if(m->list) AddMenus(this,m->list);
+		if(m->list) AddMenus(this, m->list);
 #endif
 		return;
 	}
@@ -3580,36 +3580,36 @@ next:
 	if(i && Next) Next->Update(1);
 }
 
-bool NodeLkc26::Enumerate(enumNodes en,int flags,void *pv) // SAME for as np for now
+bool NodeLkc26::Enumerate(enumNodes en, int flags, void *pv) // SAME for as np for now
 {
 	if(!(state & ~flags & (NS_SKIPPED | NS_DISABLED | NS_COLLAPSED)))
-		if(Child) if(!Child->_Enumerate(en,flags,pv)) return 0;
+		if(Child) if(!Child->_Enumerate(en, flags, pv)) return 0;
 	return 1;
 }
 
-bool NodeLkc26::_Enumerate(enumNodes en,int flags,void *pv)
+bool NodeLkc26::_Enumerate(enumNodes en, int flags, void *pv)
 {
 	if(!(state & ~flags & (NS_SKIPPED | NS_DISABLED)))
-		if(!en(this,state,pv)) return 0;
+		if(!en(this, state, pv)) return 0;
 
 	if(type & NTT_PARENT)
 	{
 		if(!(state & ~flags & NS_COLLAPSED) && (flags & NS_DOWN) && Child)
-			if(!Child->_Enumerate(en,flags,pv)) return 0;
+			if(!Child->_Enumerate(en, flags, pv)) return 0;
 
 		if(!(state & ~flags & (NS_SKIPPED | NS_DISABLED)))
-			if(flags & NS_EXIT) if(!en(this,state | NS_EXIT,pv)) return 0;
+			if(flags & NS_EXIT) if(!en(this, state | NS_EXIT, pv)) return 0;
 	}
 
-	if(Next) if(!Next->_Enumerate(en,flags,pv)) return 0;
+	if(Next) if(!Next->_Enumerate(en, flags, pv)) return 0;
 	return 1;
 }
 
-uintptr_t NodeLkc26::Set(const char *s,int updt)
+uintptr_t NodeLkc26::Set(const char *s, int updt)
 {
 	if(pmenu && pmenu->sym)
 	{
-		sym_set_string_value(pmenu->sym,s);
+		sym_set_string_value(pmenu->sym, s);
 		if(updt)
 			IUpdate();
 		else
@@ -3645,7 +3645,7 @@ uintptr_t NodeLkc26::Advance(int updt)
 	return 1;
 }
 
-uintptr_t NodeLkc26::Set(uintptr_t w,int updt)
+uintptr_t NodeLkc26::Set(uintptr_t w, int updt)
 {
 	if(pmenu && pmenu->sym)
 	{
@@ -3658,7 +3658,7 @@ uintptr_t NodeLkc26::Set(uintptr_t w,int updt)
 			case 2: val = mod; break;
 			case 3: val = yes; break;
 			}
-			sym_set_tristate_value(pmenu->sym,val); // conv 123 to 012
+			sym_set_tristate_value(pmenu->sym, val); // conv 123 to 012
 			if(updt)
 			{
 				IUpdate();
@@ -3669,7 +3669,7 @@ uintptr_t NodeLkc26::Set(uintptr_t w,int updt)
 		}else
 		if(type & NTT_STR && w > 3)
 		{
-			sym_set_string_value(pmenu->sym,(char*)w);
+			sym_set_string_value(pmenu->sym, (char*)w);
 			if(updt)
 				IUpdate();
 			else
