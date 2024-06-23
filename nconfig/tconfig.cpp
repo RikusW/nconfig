@@ -130,7 +130,7 @@ bool ShowFunc(Node *n,int flags,void *pv)
 		if(n->GetType() & NTT_STR)
 		{
 		    if(!n->GetStr())
-		    printf("(S)%s%s == error ptr = %i\n",spc,n->GetPrompt(),(int)n->GetStr()); else
+		    printf("(S)%s%s == error ptr = %li\n",spc,n->GetPrompt(),(uintptr_t)n->GetStr()); else
 		    printf("\033[%c;3%cm(S)%s%s == \"%s\"\033[m\n",br,ch,spc,n->GetPrompt(),n->GetStr());
 		}else
 		{

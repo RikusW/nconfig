@@ -446,7 +446,7 @@ NodeSymbols::NodeSymbols(const char *Arch,NodeRoot *r)
 	val[2]=2; syms[2]="m\0	 ";
 	val[3]=3; syms[3]="y\0	 ";
 	arch = (char*)malloc(strlen(Arch)+1); strcpy(arch,Arch);
-	val[4]=(unsigned int)arch; syms[4]="ARCH"; // a hack for $ARCH usage (3 times = mips sparc sparc64)
+	val[4]=(uintptr_t)arch; syms[4]="ARCH"; // a hack for $ARCH usage (3 times = mips sparc sparc64)
 	for(i=5; i<SYMBOL_LIMIT; i++) { val[i]=0; syms[i]=0; }
 	for(i=0; i<SYMBOL_LIMIT; i++) { dep[i]=0; who[i]=0; help[i]=0; }
 
@@ -488,7 +488,7 @@ bool NodeSymbols::SetPath(const char *s)
 	return 1;
 }
 
-int NodeSymbols::AddSymbol(char *s,unsigned int v)
+int NodeSymbols::AddSymbol(char *s, uintptr_t v)
 {
 	if(Count >= SYMBOL_LIMIT) { printf("Symbol limit exceeded.\n"); return 0; }
 
@@ -549,10 +549,10 @@ void NodeSymbols::Reset(int s,Node *n)
 	if(s<5 || s>=Count) return;
 	// who dunnit ?   \/ nobody so guilty anyway... used for loading
 	if(who[s] == n || !who[s])
-		if(n->GetType() & NTT_STR) val[s] = (unsigned int)""; else val[s] = 1; // guilty...
+		if(n->GetType() & NTT_STR) val[s] = (uintptr_t)""; else val[s] = 1; // guilty...
 }
 
-bool NodeSymbols::Set(int s,unsigned int v,Node *n)
+bool NodeSymbols::Set(int s,uintptr_t v,Node *n)
 {
 	if(s<5 || s>=Count) return 0;
 	if(v == 2 && !HasModules()) v = 3;
@@ -571,7 +571,7 @@ int NodeSymbols::GetDeps(int s)
 	return dep[s] & 0xFFFF;
 }
 
-unsigned int NodeSymbols::Get(int s)
+uintptr_t NodeSymbols::Get(int s)
 {
 	if(s>=Count) return 0;
 	return val[s];
@@ -589,7 +589,7 @@ void NodeSymbols::Clear()
 	{
 		who[i] = 0;
 		// skip constants allocated by NodeIf::Parse()
-		if(val[i] != (unsigned int)syms[i]) val[i] = 1;
+		if(val[i] != (uintptr_t)syms[i]) val[i] = 1;
 	}
 }
 
@@ -892,14 +892,14 @@ reget:	// for 2.2 buggy Config.in
 		if(word>3)
 		{
 			char *c = (char*)malloc(strlen((char*)word)+1);
-			strcpy(c,(char*)word); word = (unsigned int)c;
+			strcpy(c,(char*)word); word = (uintptr_t)c;
 		}
 		Symbols->Set(Config,word,this);
 	}else
 	{
 next:		wordlookup=0;
 		char *c = (char*)malloc(strlen(b)+1);
-		strcpy(c,b); word = (unsigned int)c;
+		strcpy(c,b); word = (uintptr_t)c;
 		Symbols->Set(Config,word,this);
 	}
 
@@ -1193,7 +1193,7 @@ nextx:
 				// if op2 == string - add it to the symbol table
 				// and set both the name and value to string
 AddSym:				s2 = Symbols->AddSymbol(b,1);
-				Symbols->Set(s2,(int)Symbols->GetSymbol(s2),this);
+				Symbols->Set(s2,(uintptr_t)Symbols->GetSymbol(s2),this);
 			}
 		}
 
@@ -1394,10 +1394,10 @@ int CfgFile::LoadSymbols(NodeSymbols *Symbols)
 			LineCurrent++;
 		}
 
-		unsigned int val;
+		uintptr_t val;
 		if(*LineCurrent == '"')// string
 		{
-			val=(unsigned int)++LineCurrent;
+			val=(uintptr_t)++LineCurrent;
 			while(LineCurrent<LineNext)
 			{
 				if(*LineCurrent == '"') { *LineCurrent++=0; break; }
@@ -1408,7 +1408,7 @@ int CfgFile::LoadSymbols(NodeSymbols *Symbols)
 		if(*LineCurrent == 'y') val=3; else
 		if(*LineCurrent == 'm') val=2; else
 		{
-			val=(unsigned int)LineCurrent; // a hex/dec number
+			val=(uintptr_t)LineCurrent; // a hex/dec number
 		}
 
 		int s = Symbols->AddSymbol(LineStart,0);
@@ -1440,14 +1440,15 @@ void Node::Save(FILE *c,FILE *h)
 	sym = Symbols->GetSymbol(Config);
 	if(type & NTT_STR)
 	{
-		char *str = (char*)Symbols->Get(Config);
-		if(((unsigned int)str) < 4)
+		uintptr_t ustr = Symbols->Get(Config);
+		if(ustr < 4)
 		{
 			char xx[4][2]={"","n","m","y"};
-			fprintf(c,"%s=%s\n",sym,xx[(int)str]);
-			if(h) fprintf(h,"%s=%s\n",sym,xx[(int)str]);
+			fprintf(c,"%s=%s\n",sym,xx[ustr]);
+			if(h) fprintf(h,"%s=%s\n",sym,xx[ustr]);
 		}else
 		{
+			char *str = (char*)ustr;
 			if(type & NTT_STRING)
 			{
 				fprintf(c,"%s=\"%s\"\n",sym,str);
@@ -1586,10 +1587,10 @@ void Node::Update(int i)
 			if(word>3)
 			{
 				char *c = (char*)malloc(strlen((char*)word)+1);
-				strcpy(c,(char*)word); word = (unsigned int)c;
+				strcpy(c,(char*)word); word = (uintptr_t)c;
 			}
 		}
-		unsigned int w = word;
+		uintptr_t w = word;
 		if(w == 2 && !Symbols->HasModules()) w = 3;
 		Symbols->Set(Config,w,this);
 	}
@@ -1618,7 +1619,7 @@ void NodeDep::Update(int i)
 		Notify(NS_DISABLE);
 	}else
 	{
-		unsigned int w = CheckDep(word);
+		uintptr_t w = CheckDep(word);
 		if(w == 2 && !Symbols->HasModules()) w = 3;
 		Symbols->Set(Config,w,this);
 		Notify(NS_ENABLE);
@@ -1755,9 +1756,9 @@ void Node::Notify(int flags)
 	case NS_STATE:
 	{
 		if(type & NTT_STR) break;
-		unsigned int w = Get();
+		uintptr_t w = Get();
 		if(prevword == w) return;
-		if(prevword != (unsigned int)~1) Symbols->bModified = true; // ignore first update
+		if(prevword != (uintptr_t)~1) Symbols->bModified = true; // ignore first update
 		prevword = w;
 		if(state & (NS_SKIPPED | NS_DISABLED)) return; else break;
 	}
@@ -1791,7 +1792,7 @@ void Node::Notify(int flags)
 	if(flags == NS_PROMPT) goto end;
 	if(flags == NS_STATE)
 	{
-		unsigned int w = Get();
+		uintptr_t w = Get();
 		if(prevword == w) return; else  prevword = w;
 		if(state & (NS_SKIPPED | NS_DISABLED)) return; else goto end;
 	}
@@ -1814,9 +1815,9 @@ end:
 // Dependencies
 #ifdef NC24
 
-unsigned int NodeDep::CheckDep(unsigned int w)
+uintptr_t NodeDep::CheckDep(uintptr_t w)
 {
-	unsigned int s;
+	uintptr_t s;
 
 	if(!w || w > 3) return w;
 	if(w == 2 && (type & NTT_BOOL)) return 1; // can't set a bool to m
@@ -2007,7 +2008,7 @@ int NodeRoot::Init(const char *Arch,const char *Path,const char *ConfigFile,bool
 	// hack - use 'word' for NodeRoot help
 	char *rh = (char*)malloc(256);
 	snprintf(rh,254,"<file:%s>",Path);
-	word = (unsigned int)rh;
+	word = (uintptr_t)rh;
 	// ~Node will free it
 
 // the tree now look like this:
@@ -2303,10 +2304,10 @@ const char *Node::GetStr()
 	}
 }
 
-unsigned int Node::Set(const char *s,int updt)
+uintptr_t Node::Set(const char *s,int updt)
 {
 	if(type & NTT_STR)
-		 return Set((unsigned int)s,updt);
+		 return Set((uintptr_t)s,updt);
 	else
 	if(type & NTT_NMY)
 	{
@@ -2322,7 +2323,7 @@ unsigned int Node::Set(const char *s,int updt)
 	return 0;
 }
 
-unsigned int Node::Advance(int updt)
+uintptr_t Node::Advance(int updt)
 {
 	if(!(type & NTT_INPUT)) return 0;
 	if(!(type & NTT_NMY)) return 0; // only nmy can be advanced.
@@ -2340,19 +2341,19 @@ unsigned int Node::Advance(int updt)
 	return word;
 }
 
-unsigned int Node::Get()
+uintptr_t Node::Get()
 {
 	if(state & (NS_SKIPPED | NS_DISABLED))
-		if(type & NTT_STR) return (unsigned int)""; else return 1;
+		if(type & NTT_STR) return (uintptr_t)""; else return 1;
 	else
 		if(word == 2 && !Symbols->HasModules()) return 3; else return word;
 
-//	unsigned int w = Symbols->Get(Config);
+//	uintptr_t w = Symbols->Get(Config);
 //	if((type & NTT_STR) && w<4 && w) { printf("invalid string value %i from: %s\n",w,prompt); w=0; }
 //	return w;
 }
 
-unsigned int Node::Set(unsigned int w,int updt)
+uintptr_t Node::Set(uintptr_t w,int updt)
 {
 	// only input nodes is allowed to use Set
 	if(!(type & NTT_INPUT)) return 0;
@@ -2408,8 +2409,8 @@ unsigned int Node::Set(unsigned int w,int updt)
 		}
 
 		// same as previous ?
-		if(word < 4 || !strcmp(c,(char*)word)) prevword = (unsigned int)c;
-		if(word > 4) free((void*)word);		word = (unsigned int)c;
+		if(word < 4 || !strcmp(c,(char*)word)) prevword = (uintptr_t)c;
+		if(word > 4) free((void*)word);		word = (uintptr_t)c;
 		Symbols->Set(Config,word,this);
 	}
 	if(updt) IUpdate(); else Notify(NS_STATE);
@@ -2417,7 +2418,7 @@ unsigned int Node::Set(unsigned int w,int updt)
 }
 
 #ifdef NC24
-unsigned int NodeDep::Advance(int updt)
+uintptr_t NodeDep::Advance(int updt)
 {
 	if(!(type & NTT_NMY)) return 0; // only nmy can be advanced.
 	if(state & (NS_SKIPPED | NS_DISABLED)) return 0;
@@ -2436,23 +2437,23 @@ unsigned int NodeDep::Advance(int updt)
 	return word;
 }
 
-unsigned int NodeDep::Get()
+uintptr_t NodeDep::Get()
 {
 	if(state & (NS_SKIPPED | NS_DISABLED)) return 1; else
 	{
-		unsigned int w = CheckDep(word);
+		uintptr_t w = CheckDep(word);
 		if(w == 2 && !Symbols->HasModules()) return 3; else return w;
 	}
 
 /*	// CheckDep should not be needed here... just making sure...
-	unsigned int p,w; p = w = Symbols->Get(Config);
+	uintptr_t p,w; p = w = Symbols->Get(Config);
 	w = CheckDep(w);
 	if(w!=p) printf("NodeDep::Get: Inconsistency value changed from: %i to %i\n",p,w);
 	if(word!=p) printf("NodeDep::Get: Inconsistency2 value get: %i word %i\n",p,word);
 	return w;//*/
 }
 
-unsigned int NodeDep::Set(unsigned int w,int updt)
+uintptr_t NodeDep::Set(uintptr_t w,int updt)
 {
 	// only input nodes is allowed to use Set
 //	if(!(type & NTT_INPUT)) return 0; // will this ever happen ???
@@ -2480,14 +2481,14 @@ unsigned int NodeDep::Set(unsigned int w,int updt)
 	return w;
 }
 
-unsigned int NodeChoice::Advance(int updt)
+uintptr_t NodeChoice::Advance(int updt)
 {
 	if(state & NS_SKIPPED) return 0;
 	if(word == 3) return 3; // is it already y ?
 	return Set(3,updt);
 }
 
-unsigned int NodeChoice::Set(unsigned int w,int updt)
+uintptr_t NodeChoice::Set(uintptr_t w,int updt)
 {
 	// only input nodes is allowed to use Set
 //	if(!(type & NTT_INPUT)) return 0; // will this ever happen ???
@@ -2520,7 +2521,7 @@ unsigned int NodeChoice::Set(unsigned int w,int updt)
 }
 #endif //NC24
 
-unsigned int NodeParent::Advance(int updt)
+uintptr_t NodeParent::Advance(int updt)
 {
 	Notify(state & NS_COLLAPSED ? NS_EXPAND : NS_COLLAPSE);
 	return 1;
@@ -2545,7 +2546,7 @@ NodeParent *Node::GetParent(unsigned int tp,unsigned int flags)
 {
 	NodeParent *pp,*p = Parent;
 	pp=(NodeParent*)this; // if !p pp == NodeRoot ALWAYS
-	if(tp==0 && flags==(unsigned int)~0) flags = 0; // find the first parent
+	if(tp==0 && flags==(uintptr_t)~0) flags = 0; // find the first parent
 
 	while(p)
 	{
@@ -3494,7 +3495,7 @@ bool NodeLkc26::_Enumerate(enumNodes en,int flags,void *pv)
 	return 1;
 }
 
-unsigned int NodeLkc26::Set(const char *s,int updt)
+uintptr_t NodeLkc26::Set(const char *s,int updt)
 {
 	if(pmenu && pmenu->sym)
 	{
@@ -3506,7 +3507,7 @@ unsigned int NodeLkc26::Set(const char *s,int updt)
 
 		return word;
 	}
-	return (unsigned int)"";
+	return (uintptr_t)"";
 }
 
 const char *NodeLkc26::GetStr()
@@ -3517,7 +3518,7 @@ const char *NodeLkc26::GetStr()
 		return "";
 }
 
-unsigned int NodeLkc26::Advance(int updt)
+uintptr_t NodeLkc26::Advance(int updt)
 {
 	if(type & NTT_PARENT && !(type & NTT_INPUT))
 	{
@@ -3534,7 +3535,7 @@ unsigned int NodeLkc26::Advance(int updt)
 	return 1;
 }
 
-unsigned int NodeLkc26::Set(unsigned int w,int updt)
+uintptr_t NodeLkc26::Set(uintptr_t w,int updt)
 {
 	if(pmenu && pmenu->sym)
 	{
@@ -3570,7 +3571,7 @@ unsigned int NodeLkc26::Set(unsigned int w,int updt)
 	return 1;
 }
 
-unsigned int NodeLkc26::Get()
+uintptr_t NodeLkc26::Get()
 {
 	if(pmenu && pmenu->sym)
 	{
@@ -3581,7 +3582,7 @@ unsigned int NodeLkc26::Get()
 		{
 			sym_calc_value(pmenu->sym);
 			const char *c = sym_get_string_value(pmenu->sym);
-			return (unsigned int)c;
+			return (uintptr_t)c;
 		}else
 			return 0;
 	}

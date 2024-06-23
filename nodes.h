@@ -3,6 +3,7 @@
 //Copyright (C) 2004-2006 Rikus Wessels <rikusw at rootshell dot be>
 //GNU GPL v2.0
 
+#include <stdint.h>
 
 // the number of CONFIG_'s allowed, normally between 2000 and 2500
 #define SYMBOL_LIMIT 3000
@@ -222,12 +223,12 @@ public:
 	// START ui
 
 	// user input
-	virtual unsigned int Advance(int updt=1);		// cycle through NMY
-	virtual unsigned int Set(unsigned int w,int updt=1);	// set word and Symbols->val
-	virtual unsigned int Get();
+	virtual uintptr_t Advance(int updt=1);		// cycle through NMY
+	virtual uintptr_t Set(uintptr_t w,int updt=1);	// set word and Symbols->val
+	virtual uintptr_t Get();
 	
 	// user input - str version
-	virtual unsigned int Set(const char *s,int updt=1);	// set word and Symbols->val
+	virtual uintptr_t Set(const char *s,int updt=1);	// set word and Symbols->val
 	virtual const char *GetStr();
 
 	void Select() { Notify(NS_SELECT); };	// pass NS_SELECT to the frontend
@@ -283,8 +284,7 @@ protected:
 	char *prompt;
 	int Config,line;
 	
-	unsigned int word,wordlookup;
-	unsigned int prevword;
+	uintptr_t word, wordlookup, prevword;
 
 public:
 	// User data, public
@@ -301,14 +301,14 @@ public:
 	virtual void GetDepTree(NodeDListP *d);
 	virtual bool _Enumerate(enumNodes en,int flags,void *pv);
 
-	virtual unsigned int Advance(int updt=1); // cycle through nmy
-	virtual unsigned int Set(unsigned int w,int updt=1); // set word and Symbols
-	virtual unsigned int Get();
+	virtual uintptr_t Advance(int updt=1); // cycle through nmy
+	virtual uintptr_t Set(uintptr_t w,int updt=1); // set word and Symbols
+	virtual uintptr_t Get();
 
 protected:
 	bool Parse(char *s,int l);
 	
-	unsigned int CheckDep(unsigned int w); // protected ?? -- 2.4
+	uintptr_t CheckDep(uintptr_t w); // protected ?? -- 2.4
 	
 	virtual void Update(int i=3);
 	char *ParseDeps(char *s);	// -- 2.4
@@ -335,7 +335,7 @@ public:
 	~NodeSymbols();
 
 	// //* = possibly useful //- = rather use the Node:: version
-	int AddSymbol(char *s,unsigned int v);// used for parsing+loading
+	int AddSymbol(char *s,uintptr_t v);// used for parsing+loading
 	void Clear();			// used for loading a config file
 	void Update(int i) {};		//
 
@@ -344,9 +344,9 @@ public:
 	char *GetSymbol(int s);		//-get "CONFIG_*"
 	int GetCount() { return Count; }//*Symbol Count
 
-	unsigned int Get(int s);	//-get the value
+	uintptr_t Get(int s);	//-get the value
 	void Reset(int s,Node *n);	// used when NodeIf skip nodes
-	bool Set(int s,unsigned int v,Node *n); // set the value
+	bool Set(int s,uintptr_t v,Node *n); // set the value
 	bool IsDefined(int s);		//*was the symbol defined ?
 	bool IsRedefined(int s);	//*was the symbol redefined ?
 
@@ -380,7 +380,7 @@ protected:
 	int dep[SYMBOL_LIMIT];		// number of deps on config_ + defined flag 0x80000000
 	Node *who[SYMBOL_LIMIT];	// which node set the config_? used by Reset
 	char *syms[SYMBOL_LIMIT];	// config_ name
-	unsigned int val[SYMBOL_LIMIT]; // value NMY/str
+	uintptr_t val[SYMBOL_LIMIT]; // value NMY/str
 };
 
 //-------------------------------------------------------------------
@@ -396,7 +396,7 @@ public:
 	virtual bool Enumerate(enumNodes en,int flags,void *pv);  //excl
 	virtual bool _Enumerate(enumNodes en,int flags,void *pv); //incl + next
 	virtual Node *Search(SearchNodes sn,void *pv,int i=3);
-	virtual unsigned int Advance(int updt=1);
+	virtual uintptr_t Advance(int updt=1);
 	virtual Node *GetChild() { return Child; };
 	virtual bool IsMyChild(Node *n);
 
@@ -580,8 +580,8 @@ class NodeChoice : public Node
 #endif
 public:
 	NodeChoice() { type = NT_CHOICE; DefaultChoice = 0; };
-	virtual unsigned int Advance(int updt=1);		// Set to y
-	virtual unsigned int Set(unsigned int w=3,int updt=1);	// default to y
+	virtual uintptr_t Advance(int updt=1);		// Set to y
+	virtual uintptr_t Set(uintptr_t w=3,int updt=1);	// default to y
 protected:
 	virtual void Update(int i=3);
 	bool Parse(char *s,int l);
@@ -632,11 +632,11 @@ public:
 	int GetState() { if(NLink) return NLink->GetState(); else return state & NS_ALL; };
 
 	// user input
-	unsigned int Get()
+	uintptr_t Get()
 	{ if(NLink) return NLink->Get(); else return 0; };
-	unsigned int Advance(int updt=1)
+	uintptr_t Advance(int updt=1)
 	{ if(NLink) return NLink->Advance(updt); else return 0; };
-	unsigned int Set(unsigned int w,int updt=1)
+	uintptr_t Set(uintptr_t w,int updt=1)
 	{ if(NLink) return NLink->Set(w,updt); else return 0; };
 
 protected:
@@ -660,10 +660,10 @@ public:
 	virtual bool _Enumerate(enumNodes en,int flags,void *pv);
 	
 	// user input
-	virtual unsigned int Advance(int updt=1);		// cycle through NMY
-	virtual unsigned int Set(unsigned int w,int updt=1);	// set word and Symbols->val
-	virtual unsigned int Get();
-	virtual unsigned int Set(const char *s,int updt=1);	// set word and Symbols->val
+	virtual uintptr_t Advance(int updt=1);		// cycle through NMY
+	virtual uintptr_t Set(uintptr_t w,int updt=1);	// set word and Symbols->val
+	virtual uintptr_t Get();
+	virtual uintptr_t Set(const char *s,int updt=1);	// set word and Symbols->val
 	virtual const char *GetStr();
 	virtual void Update(int i=3);
 
