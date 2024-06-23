@@ -4,6 +4,7 @@ LKC26 = $(shell if [ -f kconfig/zconf.tab.o ]; then echo "-DLKC26"; else echo ""
 
 NCFLAGS = -g
 NCFLAGS += $(LKC26)
+NCFLAGS += -Wno-write-strings
 
 nodefiles = nodes.cpp nodes.h
 ifneq ($(LKC26),$(LASTLKC26))

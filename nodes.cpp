@@ -62,7 +62,9 @@ CfgFile::~CfgFile()
 
 int CfgFile::Close()
 {
-	if(pmem) free(pmem); pmem=0;
+	if(pmem)
+		free(pmem);
+	pmem=0;
 	return 1;
 }
 
@@ -548,8 +550,9 @@ void NodeSymbols::Reset(int s,Node *n)
 {
 	if(s<5 || s>=Count) return;
 	// who dunnit ?   \/ nobody so guilty anyway... used for loading
-	if(who[s] == n || !who[s])
+	if(who[s] == n || !who[s]) {
 		if(n->GetType() & NTT_STR) val[s] = (uintptr_t)""; else val[s] = 1; // guilty...
+	}
 }
 
 bool NodeSymbols::Set(int s,uintptr_t v,Node *n)
@@ -718,10 +721,14 @@ Node::Node()
 Node::~Node()
 {
 	nfree++;
-	if(Next) delete Next; Next=0;
+	if(Next)
+		delete Next;
+	Next=0;
 
-	if(prompt) free(prompt);
-	if(word>3) free((void*)word);
+	if(prompt)
+		free(prompt);
+	if(word>3)
+		free((void*)word);
 }
 
 NodeParent::NodeParent()
@@ -735,7 +742,9 @@ NodeParent::NodeParent()
 NodeParent::~NodeParent()
 {
 	npfree++;
-	if(Child) delete Child; Child=0;
+	if(Child)
+		delete Child;
+	Child=0;
 }
 
 NodeRoot::NodeRoot()
@@ -751,9 +760,11 @@ NodeRoot::NodeRoot()
 
 void Node::SetPrompt(const char *s)
 {
-	if(prompt) free(prompt);
+	if(prompt)
+		free(prompt);
 	prompt = (char *)malloc(strlen(s)+1);
-	if(!prompt) return;
+	if(!prompt)
+		return;
 	strcpy(prompt,s);
 }
 
@@ -770,8 +781,12 @@ NodeIf::NodeIf()
 
 NodeIf::~NodeIf()
 {
-	if(Else) delete Else; Else=0;
-	if(Cond != xxcond) free(Cond); Cond = xxcond;
+	if(Else)
+		delete Else;
+	Else=0;
+	if(Cond != xxcond)
+		free(Cond);
+	Cond = xxcond;
 }
 #endif //NC24
 
@@ -1046,7 +1061,9 @@ bool NodeChoiceP::Parse(char *s,int l)
 
 	// WORD2
 	TRIMs stop=0;
-	if(*s=='\'' || *s=='\"') stop=*s++; w2=s;
+	if(*s=='\'' || *s=='\"')
+		stop=*s++;
+	w2=s;
 	while(1)
 	{
 		if(*s==stop || *s==' ' || *s=='\x09') { if(stop) { *s++=0; } break; }
@@ -1199,11 +1216,17 @@ AddSym:				s2 = Symbols->AddSymbol(b,1);
 
 		TRIMs
 
-		if(*s && (*s++!='-' && (*s!='a' && *s!='o')))
-				{ printf("-a or -o expected<%s>\n",s); return 0; }
-		if(*s=='a') op|=2; if(*s) s++;
+		if(*s && (*s++!='-' && (*s!='a' && *s!='o'))) {
+			printf("-a or -o expected<%s>\n",s);
+			return 0;
+		}
+		if(*s=='a')
+			op|=2;
+		if(*s)
+			s++;
 
-		if(!AddCondition(s1,s2,op)) return 0;
+		if(!AddCondition(s1,s2,op))
+			return 0;
 
 //		 printf("%i %c %i %c ",s1,(op&1) ? '=' : '!',s2,(op&2) ? '&' : '|');
 
@@ -1220,9 +1243,12 @@ bool NodeIf::AddCondition(int op1,int op2,int cond)
 		Condition *c=(Condition*)malloc(sizeof(Condition)*CountLimit);
 		if(!c) return 0;
 
-		for(int j=0; j<Count; j++) c[j]=Cond[j];
+		for(int j=0; j<Count; j++)
+			c[j]=Cond[j];
 
-		if(Cond != xxcond) free(Cond); Cond = c;
+		if(Cond != xxcond)
+			free(Cond);
+		Cond = c;
 	}
 	Cond[Count].op1=op1;
 	Cond[Count].op2=op2;
@@ -1264,8 +1290,10 @@ bool NodeRoot::Load(const char *ConfigFile)
 		char buf[255];
 		snprintf(buf,254,"arch/%s/defconfig",GetArch());
 
-		if(cfile.Open(".config",1)) goto _if_;
-		if(cfile.Open(buf,1)) goto _if_;
+		if(cfile.Open(".config",1))
+			goto _if_;
+		if(cfile.Open(buf,1))
+			goto _if_;
 			
 		printf("NodeRoot::Load: Couldn't Load .config or defconfig\n");
 		goto end;
@@ -1273,14 +1301,18 @@ bool NodeRoot::Load(const char *ConfigFile)
 	if(!*ConfigFile) // == "" so clear all symbols
 	{
 		Symbols->Clear();
-		if(Child) Child->Load(); ret = 1;
+		if(Child)
+			Child->Load();
+		ret = 1;
 		goto end;
 	}
 	if(cfile.Open(ConfigFile,0))
 	{
 _if_:		if(cfile.LoadSymbols(Symbols))
 		{
-			if(Child) Child->Load(); ret = 1;
+			if(Child)
+				Child->Load();
+			ret = 1;
 		}else
 			printf("NodeRoot::Load: Config file parse error.\n");
 		cfile.Close();
@@ -1755,22 +1787,29 @@ void Node::Notify(int flags)
 	{
 	case NS_STATE:
 	{
-		if(type & NTT_STR) break;
+		if(type & NTT_STR)
+			break;
 		uintptr_t w = Get();
-		if(prevword == w) return;
+		if(prevword == w)
+			return;
 		if(prevword != (uintptr_t)~1) Symbols->bModified = true; // ignore first update
 		prevword = w;
-		if(state & (NS_SKIPPED | NS_DISABLED)) return; else break;
+		if(state & (NS_SKIPPED | NS_DISABLED))
+			return;
+		else
+			break;
 	}
 
 	case NS_SKIP:		if(state & NS_SKIP) return;		state |= NS_SKIP; break;
 	case NS_UNSKIP:		if(!(state & NS_SKIP)) return;		state &= ~NS_SKIP; break;
 
 	case NS_DISABLE:	if(state & NS_DISABLE) return;		state |= NS_DISABLE;
-				if(state & NS_SKIP) return; break;
+				if(state & NS_SKIP) return;
+				break;
 
 	case NS_ENABLE:		if(!(state & NS_DISABLE)) return;	state &= ~NS_DISABLE;
-				if(state & NS_SKIP) return; break;
+				if(state & NS_SKIP) return;
+				break;
 
 	case NS_COLLAPSE:	if(state & NS_COLLAPSE) return;		state |= NS_COLLAPSE; break;
 	case NS_EXPAND:		if(!(state & NS_COLLAPSE)) return;	state &= ~NS_COLLAPSE;break;
@@ -1840,7 +1879,7 @@ uintptr_t NodeDep::CheckDep(uintptr_t w)
 
 bool NodeIf::If()
 {
-	int op1,op2;
+	uintptr_t op1,op2;
 	bool b=0,p=0; // bool prev
 	int pcond=0; // prevcond
 	for(int i=0; i<Count; i++)
@@ -2227,32 +2266,62 @@ bool NodeIf::_Enumerate(enumNodes en,int flags,void *pv)
 Node *Node::Search(SearchNodes sn,void *pv,int i)
 {
 	Node *n;
-	if(Next) {
-		if(sn(Next,pv))  return Next;  n= Next->Search(sn,pv,1); if(n) return n; }
-	if((i&2) && Parent)
+	if (Next) {
+		if (sn(Next,pv)) {
+			return Next;
+		}
+		n = Next->Search(sn,pv,1);
+		if (n) {
+			return n;
+		}
+	}
+	if ((i&2) && Parent) {
 		return Parent->Search(sn,pv,(Parent->GetType() ==
-				NT_IF && Parent->IsMyChild(this)) ? 6:2); 
+				NT_IF && Parent->IsMyChild(this)) ? 6:2);
+	}
 	return 0;
 }
 
 Node *NodeParent::Search(SearchNodes sn,void *pv,int i)
 {
 	Node *n;
-	if((i&1) && Child) {
-		if(sn(Child,pv)) return Child; n=Child->Search(sn,pv,1); if(n) return n; }
-	if(Next) {
-		if(sn(Next,pv))  return Next;  n= Next->Search(sn,pv,1); if(n) return n; }
-	if((i&2) && Parent)
+	if ((i&1) && Child) {
+		if (sn(Child,pv)) {
+			return Child;
+		}
+		n = Child->Search(sn,pv,1);
+		if (n) {
+			return n;
+		}
+	}
+	if (Next) {
+		if (sn(Next,pv)) {
+			return Next;
+		}
+		n = Next->Search(sn,pv,1);
+		if (n) {
+			return n;
+		}
+	}
+	if ((i&2) && Parent) {
 		return Parent->Search(sn,pv,(Parent->GetType() ==
 				NT_IF && Parent->IsMyChild(this)) ? 6:2);
+	}
 	return 0;
 }
 
 Node *NodeRoot::Search(SearchNodes sn,void *pv,int i)
 {
 	Node *n;
-	if((i&1) && Child) {
-		if(sn(Child,pv)) return Child; n=Child->Search(sn,pv,1); if(n) return n; }
+	if ((i&1) && Child) {
+		if (sn(Child,pv)) {
+			return Child;
+		}
+		n = Child->Search(sn,pv,1);
+		if (n) {
+			return n;
+		}
+	}
 	return 0;
 }
 
@@ -2260,15 +2329,37 @@ Node *NodeRoot::Search(SearchNodes sn,void *pv,int i)
 Node *NodeIf::Search(SearchNodes sn,void *pv,int i)
 {
 	Node *n;
-	if((i&1) && Child) {
-		if(sn(Child,pv)) return Child; n=Child->Search(sn,pv,1); if(n) return n; }
-	if((i&5) && Else) {
-		if(sn(Else,pv))  return Else;  n= Else->Search(sn,pv,1); if(n) return n; }
-	if(Next) {
-		if(sn(Next,pv))  return Next;  n= Next->Search(sn,pv,1); if(n) return n; }
-	if((i&2) && Parent)
+	if ((i&1) && Child) {
+		if (sn(Child,pv)) {
+			return Child;
+		}
+		n = Child->Search(sn,pv,1);
+		if (n) {
+			return n;
+		}
+	}
+	if ((i&5) && Else) {
+		if (sn(Else,pv)) {
+			return Else;
+		}
+		n = Else->Search(sn,pv,1);
+		if (n) {
+			return n;
+		}
+	}
+	if (Next) {
+		if (sn(Next,pv)) {
+			return Next;
+		}
+		n = Next->Search(sn,pv,1);
+		if (n) {
+			return n;
+		}
+	}
+	if ((i&2) && Parent) {
 		return Parent->Search(sn,pv,(Parent->GetType() == 
 				NT_IF && Parent->IsMyChild(this)) ? 6:2);
+	}
 	return 0;
 }
 #endif //NC24
@@ -2279,27 +2370,22 @@ Node *NodeIf::Search(SearchNodes sn,void *pv,int i)
 
 const char *Node::GetStr()
 {
-	if(state & (NS_SKIPPED | NS_DISABLED))
+	if(state & (NS_SKIPPED | NS_DISABLED)) {
 		if(type & NTT_STR) return ""; else return "n";
-
-	if(type & NTT_STR)
-	{
+	}
+	if(type & NTT_STR) {
 		if(word > 3)
 			return (char*)word;
 		else
 			return "";
-	}else
-	if(type & NTT_NMY)
-	{
-		switch(word)
-		{
+	} else if(type & NTT_NMY) {
+		switch(word) {
 		case 1: return "n";
 		case 2: return "m";
 		case 3: return "y";
 		default: return "";
 		}
-	}else
-	{
+	} else {
 		return "";
 	}
 }
@@ -2385,35 +2471,57 @@ uintptr_t Node::Set(uintptr_t w,int updt)
 		{
 			char *s = c;
 			// remove the "0x"
-			if(s[0]=='0' && s[1]=='x') { while(s[2]) { *s = s[2]; s++; }; *s = 0; s = c; }
-			if(!*c) { *s++='0'; *s=0; }
-			while(*s)
-			{
+			if(s[0]=='0' && s[1]=='x') {
+				while(s[2]) {
+					*s = s[2];
+					s++;
+				};
+				*s = 0;
+				s = c;
+			}
+			if(!*c) {
+				*s++='0';
+				*s=0;
+			}
+			while(*s) {
 				if(!((*s>='0' && *s<='9') ||
 					 ((*s>='a' && *s<='f') && (*s&=0xDF)) ||
 					 (*s>='A' && *s<='F'))) { *s=0; break; }
 				s++;
 			}
-			if(!*c) { *c='0'; c[1]=0; } // if empty
+			if(!*c) {
+				*c='0';
+				c[1]=0;
+			} // if empty
 		}else
-		if(type & NTT_INT)
-		{
+		if(type & NTT_INT) {
 			char *s = c;
 			if(!*c) { *s++='0'; *s=0; }
-			while(*s)
-			{
-				if(!(*s>='0' && *s<='9')) { *s=0; break; }
+			while(*s) {
+				if(!(*s>='0' && *s<='9')) {
+					*s=0;
+					break;
+				}
 				s++;
 			}
 			if(!*c) { *c='0'; c[1]=0; } // if empty
 		}
 
 		// same as previous ?
-		if(word < 4 || !strcmp(c,(char*)word)) prevword = (uintptr_t)c;
-		if(word > 4) free((void*)word);		word = (uintptr_t)c;
+		if (word < 4 || !strcmp(c,(char*)word)) {
+			prevword = (uintptr_t)c;
+		}
+		if(word > 4) {
+			free((void*)word);
+		}
+		word = (uintptr_t)c;
 		Symbols->Set(Config,word,this);
 	}
-	if(updt) IUpdate(); else Notify(NS_STATE);
+	if (updt) {
+		IUpdate();
+	} else {
+		Notify(NS_STATE);
+	}
 	return w;
 }
 
@@ -2763,7 +2871,8 @@ char *NodeRoot::GetDirH(const char *dn)
 
 
 	t = p = (char*)malloc(8192);
-	if(!p) return 0;
+	if(!p)
+		return 0;
 
 dirit:
 	DIR *d = opendir(buf);
@@ -2789,9 +2898,9 @@ dirit:
 	while((de = readdir(d)))
 	{
 		if(de->d_name[0] == '.') continue;
-		snprintf(t,100,"<file:%s/%s> %i\n",buf,de->d_name,de->d_type);
+		snprintf(t, 580, "<file:%s/%s> %i\n", buf, de->d_name, de->d_type);
 		t+=strlen(t);
-		if(t-p > 8000)
+		if(t-p > 7600)
 		{
 			snprintf(t,100,"buffer overflow. (almost)\n");
 			break;
@@ -2919,7 +3028,8 @@ char *NodeRoot::GetLink(const char *line,int x,char **start,char **end)
 			char *dt=buf;
 			char *st = *start + LinkLen[i][1];
 
-			for(;*st!='\n' && *st && st<stop; *dt++ = *st++); *dt=0; // copy it
+			for(;*st!='\n' && *st && st<stop; *dt++ = *st++);
+			*dt=0; // copy it
 			for(dt--; *dt==' ' || *dt=='\t' || *dt=='\"'; *dt--=0); // trim end
 			for(dt=buf; *dt==' ' || *dt=='\t' || *dt=='\"'; dt++); // trim start
 
