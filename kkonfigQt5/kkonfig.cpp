@@ -1,6 +1,6 @@
 const char *CopyRight = 	
 "kkonfig is a Qt3 kernel configuration utility based on the nconfig backend.\n\n"
-
+// vim: sts=4 ts=4 sw=4 expandtab
 "Copyright (C) 2004-2006 Rikus Wessels <rikusw at rootshell dot be>\n"
 "GNU GPL v2.0";
 
@@ -9,13 +9,13 @@ const char *CopyRight =
 #include <qfiledialog.h>
 #include <qsplitter.h>
 #include <qmenubar.h>
-#include <qheader.h>
-#include <qvbox.h>
+//#include <QHeaderView>
+#include <QVBoxLayout>
 #include <qlayout.h>
 #include <qpushbutton.h>
 #include <qbuttongroup.h>
 #include <qlineedit.h>
-#include <qaccel.h>
+//#include <qaccel.h>
 
 #include "kkonfig.h"
 #include "../nodes.h"
@@ -28,9 +28,9 @@ int main( int argc, char **argv )
     QApplication a(argc,argv);
 
     KKView KKView(argc,argv);
-    KKView.resize( 800, 600 );
-    KKView.setCaption( "Kernel Konfig" );
-    a.setMainWidget( &KKView );
+//    KKView.resize( 800, 600 );
+//    KKView.setCaption( "Kernel Konfig" );
+//    a.setMainWidget( &KKView );
     KKView.show();
 
     return a.exec();
@@ -194,7 +194,7 @@ QPixmap *IconComment = 0;
 
 //-----------------------------------------------------------------------------
 // NodeListItem
-    
+/*  
 NodeListItem::NodeListItem( QListView *p, Node *n)
     : QListViewItem(p)
 {
@@ -323,7 +323,7 @@ bool NotifyFunc(Node *n,int flags,void *pv)
     li->SetIcon();
     return 1;
 }
-
+*/
 //-----------------------------------------------------------------------------
 // init app
 
@@ -349,7 +349,7 @@ enum
 
 KKView::~KKView()
 {
-    delete nr;
+//    delete nr;
     
     delete IconNo;
     delete IconMod;
@@ -361,26 +361,30 @@ KKView::~KKView()
 }
 
 #define ADD_MENU_ITEM(menu,pr,id) \
-    menu->insertItem(pr,id);
+    menu->addAction(pr);
+//    menu->insertItem(pr,id);
 
 #define ADD_MENU_ITEMA(menu,pr,id,key) \
-    menu->insertItem(pr,id); \
-    menu->setAccel(key,id);
+    menu->addAction(pr);
+//    menu->insertItem(pr,id);
+//    menu->setAccel(key,id);
 
 #define ADD_CHECK_MENU_ITEM(menu,pr,id,bb) \
-    menu->insertItem(pr,id); \
-    menu->setItemChecked(id,bb);
+    menu->addAction(pr);
+//    menu->insertItem(pr,id); \
+//    menu->setItemChecked(id,bb);
 
 #define ADD_CHECK_MENU_ITEMA(menu,pr,id,bb,key) \
-    menu->insertItem(pr,id); \
-    menu->setItemChecked(id,bb); \
-    menu->setAccel(key,id);
+    menu->addAction(pr);
+//    menu->insertItem(pr,id); \
+//    menu->setItemChecked(id,bb); \
+//    menu->setAccel(key,id);
     
-KKView::KKView( int ac, char **av, QWidget *parent, const char *name )
-    : QVBox( parent, name )
+KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
+//    : QMainWindow(parent)
 {
-    nr=0;
-
+//    nr=0;
+    
     IconNo  = new QPixmap(xpm_no);
     IconMod = new QPixmap(xpm_mod);
     IconYes = new QPixmap(xpm_yes);
@@ -389,48 +393,52 @@ KKView::KKView( int ac, char **av, QWidget *parent, const char *name )
     IconChoice = new QPixmap(xpm_choice);
     IconComment = new QPixmap(xpm_comment);
     
-// MENUS
-    QMenuBar *mb = new QMenuBar(this,"Menu1");
+    QWidget *widget = new QWidget;
+    QVBoxLayout *layout = new QVBoxLayout;
+    setCentralWidget(widget);
+    widget->setLayout(layout);
 
-    QPopupMenu *mfile = new QPopupMenu(this,"FileMenu");
+    setWindowTitle("Kernel Konfig");
+    setMinimumSize(160, 160);
+    resize(800, 600);
+
+
+// MENUS
+    QMenu *mfile = menuBar()->addMenu("&File");
     ADD_MENU_ITEMA(mfile,"&Load",    mFileLoad	, CTRL + Key_L)
     ADD_MENU_ITEMA(mfile,"&Save",    mFileSave	, CTRL + Key_S)
     ADD_MENU_ITEM (mfile,"&Clear",   mFileClear)
     ADD_MENU_ITEM (mfile,"Set &Path",mFileSetPath)
-    mfile->insertSeparator();
+    mfile->addSeparator();
     ADD_MENU_ITEMA(mfile,"&Open",    mFileOpen	, CTRL + Key_O)
     ADD_MENU_ITEMA(mfile,"Save &as", mFileSaveAs, CTRL + Key_A)
-    mfile->insertSeparator();
-    mfile->insertItem("E&xit",this,SLOT(close()));
-    mb->insertItem("&File",mfile);
-    connect(mfile,SIGNAL(activated(int)),this,SLOT(fileMenu(int)));
+    mfile->addSeparator();
+    mfile->addAction("E&xit"); //this,SLOT(close()));
+//    connect(mfile,SIGNAL(activated(int)),this,SLOT(fileMenu(int)));
   
-    QPopupMenu *mview = new QPopupMenu(this,"ViewMenu");
-    mview->setCheckable(true);
+    QMenu *mview = menuBar()->addMenu("&View");
+//    mview->setCheckable(true);
     ADD_CHECK_MENU_ITEMA(mview,"&Disabled",     mViewDisabled, bShowDisabled , CTRL + Key_D)
     ADD_CHECK_MENU_ITEMA(mview,"&Skipped",      mViewSkipped , bShowSkipped  , CTRL + Key_K)
     ADD_MENU_ITEM(	 mview,"Horizontal",    mViewHorizontal)
-    mview->insertSeparator();
+    mfile->addSeparator();
     ADD_CHECK_MENU_ITEMA(mview,"De&pendencies", mViewDependencies, true      , CTRL + Key_P);
     ADD_CHECK_MENU_ITEMA(mview,"&Help/File",    mViewHelpFile,     bShowFile , CTRL + Key_H);
-    mb->insertItem("&View",mview);
-    connect(mview,SIGNAL(activated(int)),this,SLOT(viewMenu(int)));
+//    connect(mview,SIGNAL(activated(int)),this,SLOT(viewMenu(int)));
     
-    QPopupMenu *march = new QPopupMenu(this,"ArchMenu");
-    march->insertItem("i386");
-    mb->insertItem("&Arch",march);
-    connect(march,SIGNAL(activated(int)),this,SLOT(archMenu(int)));
+    QMenu *march = menuBar()->addMenu("&Arch");
+    march->addAction("i386");
+//    connect(march,SIGNAL(activated(int)),this,SLOT(archMenu(int)));
 
-    QPopupMenu *mhelp = new QPopupMenu(this,"HelpMenu");
+    QMenu *mhelp = menuBar()->addMenu("&Help");
     ADD_MENU_ITEMA(mhelp, "&Search"   ,mHelpSearch , CTRL + Key_F)
     ADD_MENU_ITEM (mhelp, "&About"    ,mHelpAbout  )
     ADD_MENU_ITEM (mhelp, "About &Qt" ,mHelpAboutQt)
-    mb->insertItem("&Help",mhelp);
-    connect(mhelp,SIGNAL(activated(int)),this,SLOT(helpMenu(int)));
+//    connect(mhelp,SIGNAL(activated(int)),this,SLOT(helpMenu(int)));
 
 // TREES & HELP
-    QSplitter *qs = new QSplitter(Qt::Horizontal,this,"Split1");
-  
+    QSplitter *qs = new QSplitter(Qt::Horizontal, widget);
+/*  
     // folders
     folders = new NodeView(qs,"Folders1");
     folders->header()->setClickEnabled( FALSE );
@@ -469,9 +477,9 @@ KKView::KKView( int ac, char **av, QWidget *parent, const char *name )
     qs2->setSizes(lst2);
 
     QValueList<int> lst; lst.append(350); lst.append(440);
-    qs->setSizes( lst );
+    qs->setSizes( lst );*/
 }
-
+/*
 void KKView::closeEvent(QCloseEvent *e)
 {
     if(!nr->Modified()) { e->accept(); return; }
@@ -484,10 +492,10 @@ void KKView::closeEvent(QCloseEvent *e)
     case QMessageBox::Cancel:	e->ignore(); break;
     }
 }
-
+*/
 //-----------------------------------------------------------------------------
 // init tree
-
+/*
 // hack to get the ordering RIGHT, because
 // qt -insert- children thus reversing EVERYTHING.........
 struct RW_UserData
@@ -570,11 +578,11 @@ fillarch:
     nr->Enumerate(enumFunc,NS_T_ALL,&rwd);		// and the rest
     li->setOpen(true);
 }
-
+*/
 //-----------------------------------------------------------------------------
 // class HelpText
 // forward & back
-
+/*
 void HelpText::FileInit()
 {
     if(bFileNP) { bFileNP=0; return; }
@@ -646,10 +654,10 @@ void HelpText::keyPressEvent(QKeyEvent *e)
     }
     e->ignore();
 }
-
+*/
 //-----------------------------------------------------------------------------
 // help handling
-
+/*
 NodeListItem *OldN=0;
 void KKView::ShowDeps( QListViewItem *li )
 {
@@ -766,10 +774,10 @@ void HelpText::ShowText(char *cc,int ll)
     for(int xx=0; xx<=ll; xx++) hh+=paragraphRect(xx).height();
     ensureVisible(10,hh,0,99999);
 }
-
+*/
 //-----------------------------------------------------------------------------
 // menu handlers
-
+/*
 void KKView::fileMenu(int id)
 {
     switch(id)
@@ -942,7 +950,7 @@ void KKView::helpMenu(int id)
 	break;
     }
 }
-
+*/
 //-----------------------------------------------------------------------------
 // EOF
 

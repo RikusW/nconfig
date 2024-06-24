@@ -6,7 +6,8 @@
 #include <qstring.h>
 #include <qobject.h>
 #include <qlistview.h>
-#include <qvbox.h>
+#include <QVBoxLayout>
+#include <QMainWindow>
 
 class Node;
 class NodeRoot;
@@ -14,14 +15,14 @@ class HelpText;
 
 //-----------------------------------------------------------------------------
 
-class KKView : public QVBox
+class KKView : public QMainWindow
 {
     Q_OBJECT
 
 public:
     KKView( int ac = 0, char **av = 0, QWidget *parent = 0, const char *name = 0 );
     ~KKView();
-
+/*
 protected:
     void initFolders(const char *arch=0,const char *path=0,int ac=0,char **av=0);
 
@@ -33,15 +34,15 @@ public slots:
     void helpMenu(int id);
     void ShowDeps( QListViewItem* );
     void closeEvent(QCloseEvent *e);
-
+*/
 protected:
-    NodeRoot *nr;
-    HelpText *helptext;
-    QListView *folders,*folders2;
+//    NodeRoot *nr;
+//    HelpText *helptext;
+//    QListView *folders,*folders2;
 };
 
 //-----------------------------------------------------------------------------
-
+/*
 class HelpText : public QTextEdit
 {
     Q_OBJECT
@@ -101,7 +102,7 @@ public:
     };
     QColorGroup cgDisabled,cgSkipped;
 };
-
+*/
 //-----------------------------------------------------------------------------
 
 #endif

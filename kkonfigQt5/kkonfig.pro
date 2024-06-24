@@ -11,6 +11,7 @@ TEMPLATE = app
 HEADERS += kkonfig.h ../nodes.h
 SOURCES += kkonfig.cpp ../nodes.cpp
 CONFIG += qt x11 release
+QT += widgets
 
 exists( ../kconfig/zconf.tab.c ) {
     message("Enabling Kernel 2.6.x support for kkonfig.")
