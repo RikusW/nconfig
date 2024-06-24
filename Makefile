@@ -14,7 +14,7 @@ endif
 #-----
 
 #all: nodes.o nconfig tconfig gconfig kkonfig
-all: nodes.o tconfig
+all: nodes.o nconfig tconfig
 
 #-----
 

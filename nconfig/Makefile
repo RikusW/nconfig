@@ -21,7 +21,7 @@ ZFLAGS += -g
 all: nconfig tconfig
 
 nconfig: nconfig.o ../nodes.o
-	g++ $(ZFLAGS) -lncurses -o nconfig nconfig.o ../nodes.o $(ZCONF)
+	g++ $(ZFLAGS) -o nconfig nconfig.o ../nodes.o $(ZCONF) -lncurses
 	
 tconfig: tconfig.o ../nodes.o
 	g++ $(ZFLAGS) -o tconfig tconfig.o ../nodes.o $(ZCONF)
