@@ -3243,6 +3243,9 @@ NodeParent *Node::GetParent(unsigned int tp, unsigned int flags)
 	if (!p && tp==NT_SOURCE) {
 		return (NodeParent*)pp->GetChild(); // NodeRoot==pp
 	}
+	if (!p) {
+		p = pp;
+	}
 	return p;
 }
 
