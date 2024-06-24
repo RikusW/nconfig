@@ -1,7 +1,7 @@
-const char *CopyRight = 	
-"kkonfig is a Qt3 kernel configuration utility based on the nconfig backend.\n\n"
-// vim: sts=4 ts=4 sw=4 expandtab
-"Copyright (C) 2004-2006 Rikus Wessels <rikusw at rootshell dot be>\n"
+// vim: sts=4 ts=4 sw=4
+const char *CopyRight =
+"kkonfig is a Qt5 kernel configuration utility based on the nconfig backend.\n"
+"Copyright (C) 2024 Rikus Wessels <rikusw at gmail dot com>\n"
 "GNU GPL v2.0";
 
 #include <qapplication.h>
@@ -9,7 +9,6 @@ const char *CopyRight =
 #include <qfiledialog.h>
 #include <qsplitter.h>
 #include <qmenubar.h>
-//#include <QHeaderView>
 #include <QVBoxLayout>
 #include <qlayout.h>
 #include <qpushbutton.h>
@@ -359,29 +358,8 @@ KKView::~KKView()
     delete IconChoice;
     delete IconComment;
 }
-
-#define ADD_MENU_ITEM(menu,pr,id) \
-    menu->addAction(pr);
-//    menu->insertItem(pr,id);
-
-#define ADD_MENU_ITEMA(menu,pr,id,key) \
-    menu->addAction(pr);
-//    menu->insertItem(pr,id);
-//    menu->setAccel(key,id);
-
-#define ADD_CHECK_MENU_ITEM(menu,pr,id,bb) \
-    menu->addAction(pr);
-//    menu->insertItem(pr,id); \
-//    menu->setItemChecked(id,bb);
-
-#define ADD_CHECK_MENU_ITEMA(menu,pr,id,bb,key) \
-    menu->addAction(pr);
-//    menu->insertItem(pr,id); \
-//    menu->setItemChecked(id,bb); \
-//    menu->setAccel(key,id);
     
 KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
-//    : QMainWindow(parent)
 {
 //    nr=0;
     
@@ -402,39 +380,35 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
     setMinimumSize(160, 160);
     resize(800, 600);
 
-
 // MENUS
     QMenu *mfile = menuBar()->addMenu("&File");
-    ADD_MENU_ITEMA(mfile,"&Load",    mFileLoad	, CTRL + Key_L)
-    ADD_MENU_ITEMA(mfile,"&Save",    mFileSave	, CTRL + Key_S)
-    ADD_MENU_ITEM (mfile,"&Clear",   mFileClear)
-    ADD_MENU_ITEM (mfile,"Set &Path",mFileSetPath)
+    mfile->addAction("&Load",     this, SLOT(fileLoad())); //, CTRL + Key_L)
+    mfile->addAction("&Save",     this, SLOT(fileSave())); //, CTRL + Key_S)
+    mfile->addAction("&Clear",    this, SLOT(fileClear())); //
+    mfile->addAction("Set &Path", this, SLOT(filePath())); //
     mfile->addSeparator();
-    ADD_MENU_ITEMA(mfile,"&Open",    mFileOpen	, CTRL + Key_O)
-    ADD_MENU_ITEMA(mfile,"Save &as", mFileSaveAs, CTRL + Key_A)
+    mfile->addAction("&Open",     this, SLOT(fileOpen())); //, CTRL + Key_O)
+    mfile->addAction("Save &as",  this, SLOT(fileSaveAs())); //, CTRL + Key_A)
     mfile->addSeparator();
-    mfile->addAction("E&xit"); //this,SLOT(close()));
-//    connect(mfile,SIGNAL(activated(int)),this,SLOT(fileMenu(int)));
-  
+    mfile->addAction("E&xit",     this, SLOT(close()));
+
     QMenu *mview = menuBar()->addMenu("&View");
 //    mview->setCheckable(true);
-    ADD_CHECK_MENU_ITEMA(mview,"&Disabled",     mViewDisabled, bShowDisabled , CTRL + Key_D)
-    ADD_CHECK_MENU_ITEMA(mview,"&Skipped",      mViewSkipped , bShowSkipped  , CTRL + Key_K)
-    ADD_MENU_ITEM(	 mview,"Horizontal",    mViewHorizontal)
-    mfile->addSeparator();
-    ADD_CHECK_MENU_ITEMA(mview,"De&pendencies", mViewDependencies, true      , CTRL + Key_P);
-    ADD_CHECK_MENU_ITEMA(mview,"&Help/File",    mViewHelpFile,     bShowFile , CTRL + Key_H);
-//    connect(mview,SIGNAL(activated(int)),this,SLOT(viewMenu(int)));
-    
+    mview->addAction("&Disabled",    this, SLOT(viewDisabled())); //, CTRL + Key_D)bShowDisabled -> checked ?
+    mview->addAction("&Skipped",     this, SLOT(viewSkipped()) ); //, CTRL + Key_K)bShowSkipped
+    mview->addAction("&Horizontal",  this, SLOT(viewHorizontal()));
+    mview->addSeparator();
+    mview->addAction("De&pendencies",this, SLOT(viewDependencies())); //, CTRL + Key_P)true
+    mview->addAction("&Help/File",   this, SLOT(viewHelpFile())); //, CTRL + Key_H)bShowFile
+
     QMenu *march = menuBar()->addMenu("&Arch");
     march->addAction("i386");
-//    connect(march,SIGNAL(activated(int)),this,SLOT(archMenu(int)));
+    connect(march, SIGNAL(triggered(QAction*)), this, SLOT(archMenu(QAction*)));
 
     QMenu *mhelp = menuBar()->addMenu("&Help");
-    ADD_MENU_ITEMA(mhelp, "&Search"   ,mHelpSearch , CTRL + Key_F)
-    ADD_MENU_ITEM (mhelp, "&About"    ,mHelpAbout  )
-    ADD_MENU_ITEM (mhelp, "About &Qt" ,mHelpAboutQt)
-//    connect(mhelp,SIGNAL(activated(int)),this,SLOT(helpMenu(int)));
+    mhelp->addAction("&Search",   this, SLOT(helpSearch())); //, CTRL + Key_F
+    mhelp->addAction("&About",    this, SLOT(helpAbout()));
+    mhelp->addAction("About &Qt", this, SLOT(helpAboutQt()));
 
 // TREES & HELP
     QSplitter *qs = new QSplitter(Qt::Horizontal, widget);
@@ -775,103 +749,127 @@ void HelpText::ShowText(char *cc,int ll)
     ensureVisible(10,hh,0,99999);
 }
 */
-//-----------------------------------------------------------------------------
-// menu handlers
+//------------------------------------------------------------------------------
+//file menu handlers
+
+void KKView::fileLoad()
+{
+	//	nr->Load(0);
+	puts("fileload");
+}
+
+void KKView::fileSave()
+{
+	//	nr->Save(0);
+	puts("filesave");
+}
+
+void KKView::fileClear()
+{
+	//	nr->Load("");
+	puts("fileclear");
+}
+
+void KKView::filePath()
+{
+	puts("filepath");
+	//QFileDialog fd;
+	//	fd.setMode(QFileDialog::DirectoryOnly);
+	//	QString qs = fd.getExistingDirectory(0,this,"dirdialog","Set Kernel Path");
+	//	initFolders(0,qs);
+}
+
+void KKView::fileOpen()
+{
+	puts("fileopen");
+		QFileDialog fd;
+//	  nr->Load(
+		fd.getOpenFileName(this, "Open config file");//);
+}
+
+void KKView::fileSaveAs()
+{
+	puts("filesaveas");
+		QFileDialog fd;
+		//nr->Save(
+		fd.getSaveFileName(this, "Save config file");//);
+}
+
+//------------------------------------------------------------------------------
+//view menu handlers
+
+void KKView::viewDisabled()
+{
+//	bShowDisabled = !bShowDisabled;
+//	pm->setItemChecked(mViewDisabled,bShowDisabled);
+//	pm->setItemChecked(mViewSkipped,bShowSkipped && bShowDisabled);
+//	nr->Enumerate(UpdateFunc,NS_ALL,0);
+}
+
+void KKView::viewSkipped()
+{
+//	bShowSkipped=!bShowSkipped;
+//	pm->setItemChecked(mViewSkipped,bShowSkipped && bShowDisabled);
+//	nr->Enumerate(UpdateFunc,NS_ALL,0);
+}
+
+void KKView::viewHorizontal()
+{
+//	QSplitter *qs = (QSplitter*)child("Split1");
+//	if(!qs) { printf("no split1\n"); break; }
+
+//	if(qs->orientation() == Qt::Horizontal)
+//	{
+//	pm->changeItem(id,"Vertical");
+//	qs->setOrientation(Qt::Vertical);
+//	}else
+//	{
+//	pm->changeItem(id,"Horizontal");
+//	qs->setOrientation(Qt::Horizontal);
+//	}
+
+}
+
+void KKView::viewDependencies()
+{
+//	if(pm->isItemChecked(id))
+//	{
+//	folders2->hide();
+//	pm->setItemChecked(id,false);
+//	}else
+//	{
+//	folders2->show();
+//	pm->setItemChecked(id,true);
+//	}
+
+}
+
+void KKView::viewHelpFile()
+{
+//	bShowFile = !bShowFile;
+//	pm->setItemChecked(id,bShowFile);
+}
+
+//------------------------------------------------------------------------------
+//arch menu handlers
+
+void KKView::archMenu(QAction *a)
+{
+	printf("arch action = %lx\n", (long unsigned int) a);
+}
+
 /*
-void KKView::fileMenu(int id)
-{
-    switch(id)
-    {
-    case mFileLoad: nr->Load(0); break;
-    case mFileSave: nr->Save(0); break;
-    case mFileClear: nr->Load(""); break;
-    case mFileSetPath:
-	{
-            QFileDialog fd;
-	    fd.setMode(QFileDialog::DirectoryOnly);
-	    QString qs = fd.getExistingDirectory(0,this,"dirdialog","Set Kernel Path");
-	    initFolders(0,qs);
-	    break;
-	}
-    case mFileOpen:
-	{
-            QFileDialog fd;
-	    nr->Load(fd.getOpenFileName(0,0,this,"opendialog","Open config file"));
-	    break;
-	}
-    case mFileSaveAs:
-	{
-            QFileDialog fd;
-	    nr->Save(fd.getSaveFileName(0,0,this,"savedialog","Save config file"));
-	    break;
-	}
-    }
-}
-
-void KKView::viewMenu(int id)
-{
-    QPopupMenu *pm = (QPopupMenu*)child("ViewMenu");
-    if(!pm) { printf("no viewmenu\n"); return; }
-    
-    switch(id)
-    {
-    case mViewDisabled:
-	    bShowDisabled=!bShowDisabled;
-	    pm->setItemChecked(mViewDisabled,bShowDisabled);
-	    pm->setItemChecked(mViewSkipped,bShowSkipped && bShowDisabled);
-	    nr->Enumerate(UpdateFunc,NS_ALL,0);
-	    break;
-    case mViewSkipped:
-	    bShowSkipped=!bShowSkipped;
-	    pm->setItemChecked(mViewSkipped,bShowSkipped && bShowDisabled);
-	    nr->Enumerate(UpdateFunc,NS_ALL,0);
-	    break;
-    case mViewHorizontal:
-	{
-	    QSplitter *qs = (QSplitter*)child("Split1");
-	    if(!qs) { printf("no split1\n"); break; }
-
-	    if(qs->orientation() == Qt::Horizontal)
-	    {
-		pm->changeItem(id,"Vertical");
-		qs->setOrientation(Qt::Vertical);
-	    }else
-	    {
-		pm->changeItem(id,"Horizontal");
-		qs->setOrientation(Qt::Horizontal);
-	    }
-	    break;
-	}
-    case mViewDependencies:
-	{
-	    if(pm->isItemChecked(id))
-	    {
-		folders2->hide();
-		pm->setItemChecked(id,false);
-	    }else
-	    {
-		folders2->show();
-		pm->setItemChecked(id,true);
-	    }
-	    break;
-	}
-    case mViewHelpFile:
-	{
-	    bShowFile = !bShowFile;
-	    pm->setItemChecked(id,bShowFile);
-	}
-    }
-}
-
 void KKView::archMenu(int id)
 {
-    QPopupMenu *pm = (QPopupMenu*)child("ArchMenu");
-    if(!pm) { printf("no archmenu\n"); return; }
- 
-    QString str = nr->GetPath();
-    initFolders(pm->text(id),str);
+	QPopupMenu *pm = (QPopupMenu*)child("ArchMenu");
+	if(!pm) { printf("no archmenu\n"); return; }
+
+	QString str = nr->GetPath();
+	initFolders(pm->text(id),str);
 }
 
+//------------------------------------------------------------------------------
+//help menu handlers
 
 bool MatchStr(const char *a,const char *b)
 {
@@ -905,53 +903,53 @@ bool ConfigSf(Node *n,void *pv)
 	}
 	return 0;
 }
+*/
 
 // to search from elsewhere in this app use:
 // sn->Search(PromptSf/ConfigSf,<string>);
-
+/*
 void KKView::Search(int id)
 {
-    if(!sn) sn=nr;
-    QLineEdit *le = (QLineEdit*)child("dLgLiNe",0,TRUE);
-    const char *cc = le ? le->text() : "-+-";
-    switch(id)
-    {
+	if(!sn) sn=nr;
+	QLineEdit *le = (QLineEdit*)child("dLgLiNe",0,TRUE);
+	const char *cc = le ? le->text() : "-+-";
+	switch(id)
+	{
 	case 0: if(!sn->Search(PromptSf,(char*)cc)) sn=nr; break; //prompt
 	case 1: if(!sn->Search(ConfigSf,(char*)cc)) sn=nr; break; //CONFIG_
-	case 2:					    sn=nr; break; //reset
-    }
-    if(sn == nr) nr->Select();
-}
-
-void KKView::helpMenu(int id)
-{
-    QMessageBox mb(this);
-    switch(id)
-    {
-    case mHelpSearch:	{
-	    static QString str="";
-	    QDialog d(this,"SearchDlg");
-	    QVBoxLayout *vb = new QVBoxLayout(&d,11,6);
-	        QLineEdit *le = new QLineEdit(&d,"dLgLiNe");	 vb->addWidget(le);
-		QButtonGroup *hb = new QButtonGroup(1,QGroupBox::Vertical,"",&d); vb->addWidget(hb);
-		connect(hb,SIGNAL(clicked(int)),this,SLOT(Search(int)));
-	    QPushButton *b1 = new QPushButton("&Prompt" ,hb); b1=b1;
-	    QPushButton *b2 = new QPushButton("&CONFIG_",hb); b2=b2;
-	    QPushButton *b3 = new QPushButton("&Reset"  ,hb); b3=b3;
-	    QPushButton *b4 = new QPushButton("&Close"  ,hb);
-	    connect(b4,SIGNAL(clicked()),&d,SLOT(reject()));
-	    le->setText(str); d.exec(); str=le->text();
-	    break;    	}
-    case mHelpAbout:
-	mb.about(this,"About kkonfig",CopyRight);
-	break;
-    case mHelpAboutQt:
-	mb.aboutQt(this);
-	break;
-    }
+	case 2:						sn=nr; break; //reset
+	}
+	if(sn == nr) nr->Select();
 }
 */
-//-----------------------------------------------------------------------------
-// EOF
+void KKView::helpSearch()
+{
+	puts("search");
+/*		static QString str="";
+		QDialog d(this,"SearchDlg");
+		QVBoxLayout *vb = new QVBoxLayout(&d,11,6);
+			QLineEdit *le = new QLineEdit(&d,"dLgLiNe");	 vb->addWidget(le);
+		QButtonGroup *hb = new QButtonGroup(1,QGroupBox::Vertical,"",&d); vb->addWidget(hb);
+		connect(hb,SIGNAL(clicked(int)),this,SLOT(Search(int)));
+		QPushButton *b1 = new QPushButton("&Prompt" ,hb); b1=b1;
+		QPushButton *b2 = new QPushButton("&CONFIG_",hb); b2=b2;
+		QPushButton *b3 = new QPushButton("&Reset"  ,hb); b3=b3;
+		QPushButton *b4 = new QPushButton("&Close"  ,hb);
+		connect(b4,SIGNAL(clicked()),&d,SLOT(reject()));
+		le->setText(str); d.exec(); str=le->text();*/
+}
 
+void KKView::helpAbout()
+{
+	puts("about");
+//	mb.about(this,"About kkonfig",CopyRight);
+}
+
+void KKView::helpAboutQt()
+{
+	puts("aboutQt");
+//	mb.aboutQt(this);
+}
+
+//------------------------------------------------------------------------------
 

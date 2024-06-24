@@ -1,3 +1,4 @@
+// vim: sts=4 ts=4 sw=4
 
 #ifndef KKVIEW_H
 #define KKVIEW_H
@@ -22,19 +23,36 @@ class KKView : public QMainWindow
 public:
     KKView( int ac = 0, char **av = 0, QWidget *parent = 0, const char *name = 0 );
     ~KKView();
-/*
+
 protected:
     void initFolders(const char *arch=0,const char *path=0,int ac=0,char **av=0);
 
 public slots:
-    void Search(int id);
-    void fileMenu(int id);
-    void viewMenu(int id);
-    void archMenu(int id);
-    void helpMenu(int id);
-    void ShowDeps( QListViewItem* );
-    void closeEvent(QCloseEvent *e);
-*/
+//    void Search(int id);
+//    void ShowDeps( QListViewItem* );
+//    void closeEvent(QCloseEvent *e);
+
+private slots:
+	void fileLoad();
+	void fileSave();
+	void fileClear();
+	void filePath();
+	void fileOpen();
+	void fileSaveAs();
+
+	void viewDisabled();
+	void viewSkipped();
+	void viewHorizontal();
+	void viewDependencies();
+	void viewHelpFile();
+
+	void archMenu(QAction*);
+	void helpSearch();
+	void helpAbout();
+	void helpAboutQt();
+
+
+
 protected:
 //    NodeRoot *nr;
 //    HelpText *helptext;
