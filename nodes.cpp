@@ -4146,7 +4146,7 @@ NodeLkc26::NodeLkc26(NodeParent *np, struct menu *m)
 
 	// debug
 	if (!psym && (!m || !m->prompt)) {
-		printf("sym:0 list:%x - %s\n", (int)m->list, menu_get_prompt(m));
+		printf("sym:0 list:%lx - %s\n", (uintptr_t)m->list, menu_get_prompt(m));
 		return;
 	}
 	if (m && !m->prompt) {
