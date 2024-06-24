@@ -205,7 +205,7 @@ public:
 	virtual Node *GetChild() { return 0; };
 	virtual bool IsMyChild(Node *n) { return 0; };
 	bool IsChildOf(NodeParent *n) { return n == Parent; };
-	NodeParent *GetParent(unsigned int tp=0, unsigned int flags=~0);
+	NodeParent *GetParent(unsigned int tp = 0, unsigned int flags = ~0);
 
 	// get all nodes below this one
 	virtual bool Enumerate(enumNodes en, int flags, void *pv);  //excl
@@ -224,11 +224,11 @@ public:
 
 	// user input
 	virtual uintptr_t Advance(int updt=1);		// cycle through NMY
-	virtual uintptr_t Set(uintptr_t w, int updt=1);	// set word and Symbols->val
+	virtual uintptr_t Set(uintptr_t w, int updt = 1);	// set word and Symbols->val
 	virtual uintptr_t Get();
 	
 	// user input - str version
-	virtual uintptr_t Set(const char *s, int updt=1);	// set word and Symbols->val
+	virtual uintptr_t Set(const char *s, int updt = 1);	// set word and Symbols->val
 	virtual const char *GetStr();
 
 	void Select() { Notify(NS_SELECT); };	// pass NS_SELECT to the frontend
@@ -256,7 +256,7 @@ public:
 // should be protected:
 	virtual void Load();
 	virtual void Save(FILE *c, FILE *h);
-	virtual void Update(int i=3);
+	virtual void Update(int i = 3);
 	virtual void IUpdate(); // start at the root node
 	void SetPrompt(const char *s); // INTERNAL USE
 	
@@ -295,8 +295,8 @@ public:
 class NodeDep : public Node // 2.4
 {
 public:
-	NodeDep() { type=NT_DEP; DepCount=0; };
-	NodeDep(unsigned int t) { type = t; DepCount=0; };
+	NodeDep() { type = NT_DEP; DepCount = 0; };
+	NodeDep(unsigned int t) { type = t; DepCount = 0; };
 
 	virtual void GetDepTree(NodeDListP *d);
 	virtual bool _Enumerate(enumNodes en, int flags, void *pv);
@@ -395,8 +395,8 @@ public:
 	
 	virtual bool Enumerate(enumNodes en, int flags, void *pv);  //excl
 	virtual bool _Enumerate(enumNodes en, int flags, void *pv); //incl + next
-	virtual Node *Search(SearchNodes sn, void *pv, int i=3);
-	virtual uintptr_t Advance(int updt=1);
+	virtual Node *Search(SearchNodes sn, void *pv, int i = 3);
+	virtual uintptr_t Advance(int updt = 1);
 	virtual Node *GetChild() { return Child; };
 	virtual bool IsMyChild(Node *n);
 
@@ -405,7 +405,7 @@ protected:
 	virtual void Load();
 	virtual void Save(FILE *c, FILE *h);
 public:
-	virtual void Update(int i=3);
+	virtual void Update(int i = 3);
 protected:
 	virtual bool Parse(char *s, int l) { return 0; };
 public:
@@ -431,31 +431,31 @@ public:
 	virtual char *GetHelp() { return (char*)word; };
 	Node *GetDepTree();
 
-	const char *GetFirstArch();		   // to be used as:
-	const char *GetNextArch(char *path=0); // for(p=GetFirstArch(); p; p=GetNextArch()) {}
+	const char *GetFirstArch();		// to be used as:
+	const char *GetNextArch(char *path = 0);// for(p=GetFirstArch(); p; p=GetNextArch()) {}
 
 	char *GetHelpH(Node *n);		// get formatted help
 	char *GetFileH(const char *fn);		// load a file
 	char *GetDirH(const char *dn);		// load a directory - use by GetFileH
 	void FreeH(char *f);			// use ONLY when autofree is off
 	void SetAutoFreeH(bool b);		// on by default
-	char *GetLinkFileH(const char *line, int x, char **start, char **end, int *l=0, char **fn=0); // convenience
+	char *GetLinkFileH(const char *line, int x, char **start, char **end, int *l = 0, char **fn = 0); // convenience
 	char *GetLink(const char *line, int x, char **start, char **end);// used for browsing docs
 	
 	bool bLkc26;
 	NodeDListP *DepList;
 
-	int  Init_CmdLine(int argc, char *argv[], bool bSpc=false);
-	int  Init(const char *Arch=0, const char *Path=0, const char *ConfigFile=0, bool bSpc=false);
+	int  Init_CmdLine(int argc, char *argv[], bool bSpc = false);
+	int  Init(const char *Arch = 0, const char *Path = 0, const char *ConfigFile = 0, bool bSpc = false);
 	bool Modified() { return Symbols->bModified; };
 	bool Save(const char *ConfigFile);
 	bool Load(const char *ConfigFile);
 	void SetNotify(enumNodes en) { Symbols->Ntfy = en; };	// want node state callbacks ?
 	virtual bool _Enumerate(enumNodes en, int flags, void *pv);
-	virtual Node *Search(SearchNodes sn, void *pv, int i=3);
+	virtual Node *Search(SearchNodes sn, void *pv, int i = 3);
 
 //xxxxprotected: xxxx
-	virtual void Update(int i=3);
+	virtual void Update(int i = 3);
 protected:
 	bool Parse(char *s, int l);
 private:
@@ -486,7 +486,7 @@ public:
 	virtual void GetDepTree(NodeDListP *d);
 	virtual bool Enumerate(enumNodes en, int flags, void *pv);
 	virtual bool _Enumerate(enumNodes en, int flags, void *pv);
-	virtual Node *Search(SearchNodes sn, void *pv, int i=3);
+	virtual Node *Search(SearchNodes sn, void *pv, int i = 3);
 	virtual Node *GetChild() { return Child ? Child : Else; };
 
 	void AddChild(Node *n); // protected ????
@@ -494,7 +494,7 @@ public:
 protected:
 	virtual void Load();
 	virtual void Save(FILE *c, FILE *h);
-	void Update(int i=3);
+	void Update(int i = 3);
 
 protected:
 	bool Parse(char *s, int l);
@@ -514,17 +514,17 @@ protected:
 #endif //NC24
 
 class NodeSource : public NodeParent {
-public:	NodeSource() { type=NT_SOURCE; };
+public:	NodeSource() { type = NT_SOURCE; };
 protected: bool Parse(char *s, int l);
 };
 class NodeMenu : public NodeParent {
-public:	NodeMenu() { type=NT_MENU; };
+public:	NodeMenu() { type = NT_MENU; };
 protected: bool Parse(char *s, int l);
 };
 
 #ifdef NC24
 class NodeComment : public Node {
-public:	NodeComment() { type=NT_COMMENT; };
+public:	NodeComment() { type = NT_COMMENT; };
 protected: bool Parse(char *s, int l);
 };
 
@@ -558,7 +558,7 @@ protected: bool Parse(char *s, int l);
 class NodeChoiceP : public NodeParent
 {
 public:
-	NodeChoiceP() { type=NT_CHOICEP; };
+	NodeChoiceP() { type = NT_CHOICEP; };
 	char *GetHelp();
 	char *GetSymbol();
 	int GetConfig();
@@ -567,7 +567,7 @@ protected:
 };
 #ifdef USE_NCHOICE
 class NodeChoiceNP : public NodeChoiceP {
-public:	NodeChoiceNP() { type=NT_CHOICEP; };
+public:	NodeChoiceNP() { type = NT_CHOICEP; };
 protected: bool Parse(char *s, int l);
 };
 #endif
@@ -580,10 +580,10 @@ class NodeChoice : public Node
 #endif
 public:
 	NodeChoice() { type = NT_CHOICE; DefaultChoice = 0; };
-	virtual uintptr_t Advance(int updt=1);		// Set to y
-	virtual uintptr_t Set(uintptr_t w=3, int updt=1);	// default to y
+	virtual uintptr_t Advance(int updt = 1);		// Set to y
+	virtual uintptr_t Set(uintptr_t w = 3, int updt = 1);	// default to y
 protected:
-	virtual void Update(int i=3);
+	virtual void Update(int i = 3);
 	bool Parse(char *s, int l);
 	bool DefaultChoice;
 };
@@ -602,7 +602,7 @@ public:
 
 	void AddChild(Node *n) { NodeParent::AddChild(n); };
 	void Clean() { if(Child) delete Child; Child=0; };
-	void Update(int i=3) { if(Child) Child->Update(i); };
+	void Update(int i = 3) { if(Child) Child->Update(i); };
 #ifdef NC24
 	void AddChild(NodeDList *n);
 	void CheckOutConfig(int c);
@@ -621,7 +621,7 @@ public:
 	virtual ~NodeDList() {};
 
 	// internal
-	virtual void Update(int i=3);
+	virtual void Update(int i = 3);
 	
 	// get all nodes below this one
 	virtual bool _Enumerate(enumNodes en, int flags, void *pv); //incl
@@ -634,9 +634,9 @@ public:
 	// user input
 	uintptr_t Get()
 	{ if(NLink) return NLink->Get(); else return 0; };
-	uintptr_t Advance(int updt=1)
+	uintptr_t Advance(int updt = 1)
 	{ if(NLink) return NLink->Advance(updt); else return 0; };
-	uintptr_t Set(uintptr_t w, int updt=1)
+	uintptr_t Set(uintptr_t w, int updt = 1)
 	{ if(NLink) return NLink->Set(w, updt); else return 0; };
 
 protected:
@@ -660,12 +660,12 @@ public:
 	virtual bool _Enumerate(enumNodes en, int flags, void *pv);
 	
 	// user input
-	virtual uintptr_t Advance(int updt=1);		// cycle through NMY
-	virtual uintptr_t Set(uintptr_t w, int updt=1);	// set word and Symbols->val
+	virtual uintptr_t Advance(int updt = 1);		// cycle through NMY
+	virtual uintptr_t Set(uintptr_t w, int updt = 1);	// set word and Symbols->val
 	virtual uintptr_t Get();
-	virtual uintptr_t Set(const char *s, int updt=1);	// set word and Symbols->val
+	virtual uintptr_t Set(const char *s, int updt = 1);	// set word and Symbols->val
 	virtual const char *GetStr();
-	virtual void Update(int i=3);
+	virtual void Update(int i = 3);
 
 public:
 	// user interfacing
