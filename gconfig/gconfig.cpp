@@ -245,11 +245,11 @@ static void tree_selection_changed_cb (GtkTreeSelection *selection, gpointer dat
         // add nodes to the store
         GtkTreeIter citer;
         TreeUserData tud; tud.p = 0; tud.c = &citer; tud.ts=depstore;
-        nLastDep = n->GetDepTree();
-        if(nLastDep) enumFunc(nLastDep,0,&tud); // call the callback directly
+//x      nLastDep = n->GetDepTree();
+//x      if(nLastDep) enumFunc(nLastDep,0,&tud); // call the callback directly
 
 	// update it
-	nLastDep->Update(1);
+//x		nLastDep->Update(1);
 
         // expand the root node
         GtkTreePath *tp = gtk_tree_path_new_first();

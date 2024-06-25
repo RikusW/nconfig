@@ -3862,7 +3862,8 @@ Node *Node::GetDepTree()
 void Node::GetDepTree(NodeDListP *d)
 {
 	if (!(type & NTT_DEF) || !Symbols->IsRedefined(Config)) {
-		NodeDList *l = new NodeDList(this); d->AddChild(l);
+		NodeDList *l = new NodeDList(this);
+		d->AddChild(l); //crash here ?
 	}
 	Node *n = GetParent(NT_IF);
 	if (n) {
