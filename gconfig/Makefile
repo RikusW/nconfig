@@ -17,16 +17,17 @@ endif
 #
 
 ZFLAGS += -g
+ZFLAGS += -Wno-write-strings -Wno-deprecated-declarations
 
 all: gconfig
 
 gconfig: gconfig.o ../nodes.o
 	g++ $(ZFLAGS) -o gconfig ../nodes.o gconfig.o $(ZCONF) \
-	    `pkg-config --libs gtk+-2.0 libgnomeui-2.0`
+	    `pkg-config --libs glib-2.0 gtk+-2.0`
 	
 gconfig.o: gconfig.cpp
 	g++ $(ZFLAGS) -c -o gconfig.o gconfig.cpp \
-	    `pkg-config --cflags glib-2.0 gtk+-2.0 libgnomeui-2.0`
+	    `pkg-config --cflags glib-2.0 gtk+-2.0`
 
 gconfig1: gconfig1.cpp ../nodes.o
 	@echo

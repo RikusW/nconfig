@@ -1,7 +1,8 @@
+// vim: sts=4 ts=4 sw=4
 const char *CopyRight =
 "gconfig is a gtk+2 kernel configuration utility based on the nconfig backend.\n\n"
 
-"Copyright (C) 2004-2006 Rikus Wessels <rikusw at rootshell dot be>\n"
+"Copyright (C) 2004-2006-2024 Rikus Wessels <rikusw at gmail dot com>\n"
 "GNU GPL v2.0";
 
 // line layout +-
@@ -15,8 +16,8 @@ const char *CopyRight =
 // 100 - menu building
 // 100 - init
 
-#include <gnome.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms-compat.h>
 
 #include "../nodes.h"
 
@@ -115,6 +116,7 @@ bool FreeFunc(Node *n,int flags,void *pv)
 {
     if(!(n->GetType() & NTT_VISIBLE)) return true;
     if(n->user) gtk_tree_iter_free((GtkTreeIter*)n->user);
+    return true; //TODO check this again XXX
 }
 
 bool NotifyFunc(Node *n,int flags,void *pv);
@@ -270,7 +272,7 @@ void Edited(GtkCellRendererText *gcrt,gchar *path_string,gchar *new_text,gpointe
     if(!(n->GetType() & NTT_STR)) { printf("Edited: Node is not of type string!\n"); return; }
 
     // set the new value
-    n->Set((int)new_text);
+    n->Set((uintptr_t)new_text);
     gtk_tree_store_set (GTK_TREE_STORE(model), &iter, PROMPT_COLUMN, new_text, -1);
     ShowHelp(n);
 }
@@ -450,6 +452,7 @@ bool ShowFile(char *fn,int line,int lfrom)
     return 1;
 }
 
+
 gboolean KeyOverride(GtkWidget *tv,GdkEvent *e,gpointer ud)
 {
     
@@ -504,6 +507,7 @@ gboolean KeyOverride(GtkWidget *tv,GdkEvent *e,gpointer ud)
 	    
     return 0;
 }
+
 
 gboolean CheckForLink(GtkWidget *tv,GdkEvent *event1,gpointer ud)
 {
@@ -784,7 +788,7 @@ void SearchDlgRes(GtkButton *btn,gpointer a1) //GtkDialog *d,gint a1,gpointer ud
 	GtkEntry *ge = pv ? GTK_ENTRY(pv) : 0;
 	const gchar* txt = ge ? gtk_entry_get_text(ge) : "";
 	
-	switch((gint)a1)
+	switch((intptr_t)a1)
 	{
 	case 1: if(!sn->Search(PromptSf,(char*)txt)) sn=nr; break; //prompt
 	case 2: if(!sn->Search(ConfigSf,(char*)txt)) sn=nr; break; //CONFIG_
@@ -829,7 +833,7 @@ void SearchFunc(GtkMenuItem *mi,gpointer ud)
 void AboutFunc(GtkMenuItem *mi,gpointer ud)
 {
     GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(app),
-	    GTK_DIALOG_MODAL,GTK_MESSAGE_INFO,GTK_BUTTONS_CLOSE,CopyRight);
+	    GTK_DIALOG_MODAL,GTK_MESSAGE_INFO,GTK_BUTTONS_CLOSE,CopyRight, "");
     gtk_dialog_run(GTK_DIALOG(d));
     gtk_widget_destroy(d);
 }
@@ -974,13 +978,9 @@ int main(int argc,char *argv[])
     GdkColor dgray; dgray.pixel=0; dgray.red=45000; dgray.green=45000; dgray.blue=45000;
     GdkColor lgray; lgray.pixel=0; lgray.red=49000; lgray.green=49000; lgray.blue=49000;
 
-// init gnome
-    //gnome_init("test1","0.1",argc,argv);
-    
-    GnomeProgram *app1;
-    app1 = gnome_program_init("gconfig","0.1",LIBGNOMEUI_MODULE,argc,argv,GNOME_PARAM_NONE);
-    
-    app = gnome_app_new("gconfig-0.1",nr->GetPrompt() );//"window title");
+    //init gtk2
+    gtk_init(&argc, &argv);
+    app = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_signal_connect(GTK_OBJECT(app),"delete-event",GTK_SIGNAL_FUNC(TestExit),NULL);
 
 // create the views
@@ -1083,8 +1083,8 @@ int main(int argc,char *argv[])
     gtk_paned_pack2(GTK_PANED(hpd),vpd,1,1);
     gtk_paned_set_position(GTK_PANED(hpd),300);
     
-// start the app
-    gnome_app_set_contents(GNOME_APP(app),mbox);//tree);
+    // start the app
+    gtk_container_add (GTK_CONTAINER(app), mbox);
     gtk_window_set_default_size(GTK_WINDOW(app),800,600);
     gtk_widget_show_all(GTK_WIDGET(app));
     gtk_main();
