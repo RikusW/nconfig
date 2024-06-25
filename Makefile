@@ -14,7 +14,7 @@ endif
 #-----
 
 #all: nodes.o nconfig tconfig gconfig kkonfig
-all: nodes.o nconfig tconfig kkonfig
+all: nodes.o nconfig tconfig gconfig
 
 #-----
 
@@ -25,10 +25,10 @@ zconf:
 	fi; \
 	if [ "$(LASTLKC26)" != "$(LKC26)" ]; then \
 	    echo $(LKC26) > .lkc; \
-	    rm -f kkonfig/Makefile; \
 	    rm -f nodes.o; \
 	fi; \
 
+#	    rm -f kkonfig/Makefile; \
 #-----
 
 nodes.o: $(nodefiles)
@@ -52,12 +52,12 @@ nconfig: nodes.o
 
 #-----
 
-./kkonfig/Makefile: ./kkonfig/kkonfig.pro
-	@cd kkonfig; . ./setqt; qmake
+#./kkonfig/Makefile: ./kkonfig/kkonfig.pro
+#	@cd kkonfig; . ./setqt; qmake
 
-.PHONY: kkonfig
-kkonfig: nodes.o kkonfig/Makefile
-	@. kkonfig/setqt > /dev/null; $(MAKE) -C kkonfig kkonfig
+#.PHONY: kkonfig
+#kkonfig: nodes.o kkonfig/Makefile
+#	@. kkonfig/setqt > /dev/null; $(MAKE) -C kkonfig kkonfig
 
 #-----
 
@@ -67,20 +67,13 @@ gconfig: nodes.o
 
 #-----
 
-
-.PHONY: gconfig1
-gconfig1: nodes.o
-	@$(MAKE) -C gconfig gconfig1
-
-#-----
-
 bzfiles =\
  nconfig-0.4/Makefile nconfig-0.4/nodes.h nconfig-0.4/nodes.cpp nconfig-0.4/DOC nconfig-0.4/README\
  nconfig-0.4/TODO nconfig-0.4/kconfig nconfig-0.4/qconf.patch\
  nconfig-0.4/gconfig/Makefile nconfig-0.4/gconfig/gconfig.cpp nconfig-0.4/gconfig/gconfig1.cpp\
- nconfig-0.4/nconfig/Makefile nconfig-0.4/nconfig/nconfig.cpp nconfig-0.4/nconfig/tconfig.cpp\
- nconfig-0.4/kkonfig/kkonfig.pro nconfig-0.4/kkonfig/kkonfig.cpp nconfig-0.4/kkonfig/kkonfig.h\
- nconfig-0.4/kkonfig/setqt nconfig-0.4/kkonfig/Makefile
+ nconfig-0.4/nconfig/Makefile nconfig-0.4/nconfig/nconfig.cpp nconfig-0.4/nconfig/tconfig.cpp
+# nconfig-0.4/kkonfig/kkonfig.pro nconfig-0.4/kkonfig/kkonfig.cpp nconfig-0.4/kkonfig/kkonfig.h\
+# nconfig-0.4/kkonfig/setqt nconfig-0.4/kkonfig/Makefile
 
 .PHONY: $(bzfiles)
 
@@ -100,15 +93,15 @@ bz9: nconfig.tbz
 clean:
 	-rm -f nodes.o
 	$(MAKE) -C nconfig clean
-	. kkonfig/setqt; $(MAKE) -C kkonfig clean
 	$(MAKE) -C gconfig clean
+#. kkonfig/setqt; $(MAKE) -C kkonfig clean
 
 distclean:
 	-rm -f *~
 	-rm -f .lkc
 	-rm -f nodes.o
 	$(MAKE) -C nconfig distclean
-	$(MAKE) -C kkonfig distclean
+	#$(MAKE) -C kkonfig distclean
 	$(MAKE) -C gconfig distclean
 
 

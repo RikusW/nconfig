@@ -13,3 +13,5 @@
 	search +
 	history + xref merge...
 
+Handle " # in string != comment "
+
