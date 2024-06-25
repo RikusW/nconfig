@@ -1,0 +1,11 @@
+
+*.o
+.lkc
+*.swp
+*.stash
+nconfig/tconfig
+nconfig/nconfig
+gconfig/gconfig
+kkonfigQt5/kkonfig
+moc_*
+
