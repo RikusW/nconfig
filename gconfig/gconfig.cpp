@@ -268,7 +268,7 @@ static void tree_selection_changed_cb (GtkTreeSelection *selection, gpointer dat
 		tud.c = &citer;
 		tud.ts=depstore;
 
-		nLastDep = n->GetDepTree(); //TODO XXX FIXME
+		nLastDep = n->GetDepTree();
 		if (nLastDep) {
 			enumFunc(nLastDep, 0, &tud); // call the callback directly
 			nLastDep->Update(1);
