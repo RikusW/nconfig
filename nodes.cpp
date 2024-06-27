@@ -3227,7 +3227,7 @@ NodeParent *Node::GetParent(unsigned int tp, unsigned int flags)
 {
 	NodeParent *pp, *p = Parent;
 	pp = (NodeParent*)this; // if !p pp == NodeRoot ALWAYS
-	if (tp == 0 && flags == (uintptr_t)~0) {
+	if (tp == 0 && flags == (unsigned int)~0) {
 		flags = 0; // find the first parent
 	}
 	while (p) {
@@ -3863,20 +3863,21 @@ void Node::GetDepTree(NodeDListP *d)
 {
 	if (!(type & NTT_DEF) || !Symbols->IsRedefined(Config)) {
 		NodeDList *l = new NodeDList(this);
-		d->AddChild(l); //crash here ?
+		d->AddChild(l);
 	}
 	Node *n = GetParent(NT_IF);
 	if (n) {
-		n->GetDepTree(d);
+		n->GetDepTree(d); //crash here
 	}
 }
 
 void NodeDep::GetDepTree(NodeDListP *d)
 {
-	NodeDList *l = new NodeDList(this); d->AddChild(l);
+	NodeDList *l = new NodeDList(this);
+	d->AddChild(l);
 
 	for (int i=0; i<DepCount; i++) {
-		 d->CheckOutConfig(DepList[i]);
+		d->CheckOutConfig(DepList[i]);
 	}
 	Node *n = GetParent(NT_IF);
 	if (n) {
@@ -3888,7 +3889,7 @@ void NodeIf::GetDepTree(NodeDListP *d)
 {
 	for (int i=0; i<Count; i++) {
 		d->CheckOutConfig(Cond[i].op1);
-		 d->CheckOutConfig(Cond[i].op2);
+		d->CheckOutConfig(Cond[i].op2);
 	}
 	Node *n = GetParent(NT_IF);
 	if (n) {
