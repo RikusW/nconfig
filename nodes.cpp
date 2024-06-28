@@ -80,19 +80,33 @@ int CfgFile::ReadLine()
 	}
 	LineStart = LineNext;
 
+	char quote = 0;
 next:	// get the line
+	char comment = 0;
 	while (LineNext < EndMem) {
 		if (*LineNext == 0xa) {
 			goto rOK;
-		}
-		if (*LineNext == '#') {
+		} else
+		if (!comment && (*LineNext == '\'' || *LineNext == '"')) {
+			if (quote) {
+				if (quote == *LineNext) {
+					quote = 0;
+				}
+			} else {
+				quote = *LineNext;
+			}
+		} else
+		if (*LineNext == '#' && !quote) {
 			*LineNext = 0;
+			comment = 1;
 		}
 		LineNext++;
 	}
-	if (LineNext > EndMem) {
+	if (LineNext >= EndMem) {
 		return 0; // reading after eof...
 	}
+	puts("ERROR, should never reach here");
+	return 0;
 rOK:
 	*LineNext++ = 0;
 	LineNum++;
@@ -101,6 +115,11 @@ rOK:
 		*(LineNext-1) = ' ';
 		*(LineNext-2) = ' ';
 		goto next;
+	}
+	if (quote) {
+		printf("Error expected %c before end of %s:%i\n", quote, FName, LineNum);
+		puts(LineStart);
+		quote = 0;
 	}
 
 	// trim right
