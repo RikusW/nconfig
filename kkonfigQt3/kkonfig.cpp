@@ -1,4 +1,5 @@
-const char *CopyRight = 	
+// vim: sts=4 ts=4 sw=4 cindent
+const char *CopyRight =
 "kkonfig is a Qt3 kernel configuration utility based on the nconfig backend.\n\n"
 
 "Copyright (C) 2004-2006 Rikus Wessels <rikusw at rootshell dot be>\n"
@@ -20,23 +21,24 @@ const char *CopyRight =
 #include "kkonfig.h"
 #include "../nodes.h"
 
-bool bShowFile=false;
-bool bShowSkipped=false,bShowDisabled=false;
+bool bShowFile = false;
+bool bShowSkipped = false;
+bool bShowDisabled = false;
 
 int main( int argc, char **argv )
 {
-    QApplication a(argc,argv);
+	QApplication a(argc, argv);
 
-    KKView KKView(argc,argv);
-    KKView.resize( 800, 600 );
-    KKView.setCaption( "Kernel Konfig" );
-    a.setMainWidget( &KKView );
-    KKView.show();
+	KKView KKView(argc, argv);
+	KKView.resize( 800, 600 );
+	KKView.setCaption( "Kernel Konfig" );
+	a.setMainWidget( &KKView );
+	KKView.show();
 
-    return a.exec();
+	return a.exec();
 }
 
-static const char *xpm_no[]={
+static const char *xpm_no[] = {
 "16 16 2 1",
 ". c None",
 "# c #ff0000",
@@ -57,7 +59,7 @@ static const char *xpm_no[]={
 "................",
 "................"};
 
-static const char *xpm_mod[]={
+static const char *xpm_mod[] = {
 "16 16 2 1",
 ". c None",
 "# c #d0f000",
@@ -78,7 +80,7 @@ static const char *xpm_mod[]={
 "................",
 "................"};
 
-static const char *xpm_yes[]={
+static const char *xpm_yes[] = {
 "16 16 2 1",
 ". c None",
 "# c #00ff00",
@@ -99,7 +101,7 @@ static const char *xpm_yes[]={
 "................",
 "................"};
 
-static const char *xpm_str[]={
+static const char *xpm_str[] = {
 "16 16 2 1",
 ". c None",
 "1 c #6060ff",
@@ -120,7 +122,7 @@ static const char *xpm_str[]={
 "................",
 "................"};
 
-static const char *xpm_menu[]={
+static const char *xpm_menu[] = {
 "16 16 2 1",
 ". c None",
 "# c #6060ff",
@@ -141,7 +143,7 @@ static const char *xpm_menu[]={
 "................",
 "................"};
 
-static const char *xpm_choice[]={
+static const char *xpm_choice[] = {
 "16 16 2 1",
 ". c None",
 "1 c #6060ff",
@@ -162,7 +164,7 @@ static const char *xpm_choice[]={
 "................",
 "................"};
 
-static const char *xpm_comment[]={
+static const char *xpm_comment[] = {
 "16 16 3 1",
 ". c None",
 "0 c #000000",
@@ -194,134 +196,162 @@ QPixmap *IconComment = 0;
 
 //-----------------------------------------------------------------------------
 // NodeListItem
-    
-NodeListItem::NodeListItem( QListView *p, Node *n)
-    : QListViewItem(p)
+
+NodeListItem::NodeListItem(QListView *p, Node *n)
+	: QListViewItem(p)
 {
-    node = n;
-    n->user = this;
-    setText( 0, n->GetPrompt() );
-    SetIcon();
+	node = n;
+	n->user = this;
+	setText( 0, n->GetPrompt() );
+	SetIcon();
 }
-    
-NodeListItem::NodeListItem( NodeListItem *parent,NodeListItem *after, Node *n )
-    : QListViewItem( parent , after )
+
+NodeListItem::NodeListItem(NodeListItem *parent, NodeListItem *after, Node *n)
+	: QListViewItem( parent , after )
 {
-    node = n;
-    n->user = this;
-    setText( 0, n->GetPrompt() );
-    SetIcon();
+	node = n;
+	n->user = this;
+	setText( 0, n->GetPrompt() );
+	SetIcon();
 }
 
 void NodeListItem::activate()
 {
-    QPoint pt;
-    if(!activatedPos(pt) || QRect(0,0,height(),height()).contains(pt))
-    {
-	if(node->GetType() & NTT_STR)
-	{
-            setRenameEnabled(0,true);
-            startRename(0);
-	}else
-	{
-	    node->Advance();
+	QPoint pt;
+	if (!activatedPos(pt) || QRect(0, 0, height(), height()).contains(pt)) {
+		if (node->GetType() & NTT_STR) {
+			setRenameEnabled(0, true);
+			startRename(0);
+		} else {
+			node->Advance();
+		}
 	}
-    }
 }
 
 void NodeListItem::okRename(int col)
 {
-    QListViewItem::okRename(col);
-   
-    // update Node
-    char buf[100];
-    strcpy(buf,text(0));
-    node->Set((uintptr_t)buf);
+	QListViewItem::okRename(col);
 
-    // Update the help
-    listView()->setSelected(this,false);
-    listView()->setSelected(this,true);
+	// update Node
+	char buf[100];
+	strcpy(buf, text(0));
+	node->Set((uintptr_t)buf);
+
+	// Update the help
+	listView()->setSelected(this, false);
+	listView()->setSelected(this, true);
 }
 
 void NodeListItem::SetIcon()
 {
-    if(node->GetType() & (NTT_INPUT | NTT_DEF))
-    switch(node->Get())
-    {
-    case 1: setPixmap(0,*IconNo); break;
-    case 2: setPixmap(0,*IconMod); break;
-    case 3: setPixmap(0,*IconYes); break;
-    default: setPixmap(0,*IconStr); break;
-    }else
-    switch(node->GetType())
-    {
-    case NT_ROOT:
-    case NT_MENU: setPixmap(0,*IconMenu); break;
-    case NT_CHOICEP: setPixmap(0,*IconChoice); break;
-    case NT_COMMENT | NTT_PARENT:
-    case NT_COMMENT: setPixmap(0,*IconComment); break;
-    }
-    if(node->GetState() & NS_SKIPPED) setVisible(bShowSkipped && bShowDisabled); else
-    if(node->GetState() & NS_DISABLED) setVisible(bShowDisabled); else setVisible(true);
+	if (node->GetType() & (NTT_INPUT | NTT_DEF)) {
+		switch (node->Get()) {
+		case 1:  setPixmap(0, *IconNo);  break;
+		case 2:  setPixmap(0, *IconMod); break;
+		case 3:  setPixmap(0, *IconYes); break;
+		default: setPixmap(0, *IconStr); break;
+		}
+	} else {
+		switch (node->GetType()) {
+		case NT_ROOT:
+		case NT_MENU:    setPixmap(0, *IconMenu);    break;
+		case NT_CHOICEP: setPixmap(0, *IconChoice);  break;
+		case NT_COMMENT | NTT_PARENT:
+		case NT_COMMENT: setPixmap(0, *IconComment); break;
+		}
+	}
+	if (node->GetState() & NS_SKIPPED) {
+		setVisible(bShowSkipped && bShowDisabled);
+	} else {
+		if (node->GetState() & NS_DISABLED) {
+			setVisible(bShowDisabled);
+		} else {
+			setVisible(true);
+		}
+	}
 }
 
-void NodeListItem::paintCell(QPainter *p,const QColorGroup &cg,int c,int w,int a)
+void NodeListItem::paintCell(QPainter *p, const QColorGroup &cg, int c, int w, int a)
 {
-    NodeView *nv = (NodeView*)listView();
-    const QColorGroup *pcg = &cg;
-    if(node->GetState() & NS_SKIPPED) pcg = &nv->cgSkipped; else // override disabled
-    if(node->GetState() & NS_DISABLED) pcg = &nv->cgDisabled;
-	    
-    QListViewItem::paintCell(p,*pcg,c,w,a);
-}
- 
-bool UpdateFunc(Node *n,int flags,void *pv)
-{
-    if(!(n->GetType() & NTT_VISIBLE)) return 1;
-
-    NodeListItem *li = (NodeListItem*)n->user; pv=pv; //compiler shutup
-    
-    if(flags & NS_SKIPPED) li->setVisible(bShowSkipped && bShowDisabled); else 
-    if(flags & NS_DISABLED) li->setVisible(bShowDisabled);
-    return 1;
+	NodeView *nv = (NodeView*)listView();
+	const QColorGroup *pcg = &cg;
+	if (node->GetState() & NS_SKIPPED) {
+		pcg = &nv->cgSkipped; // override disabled
+	} else {
+		if (node->GetState() & NS_DISABLED) {
+			pcg = &nv->cgDisabled;
+		}
+	}
+	QListViewItem::paintCell(p, *pcg, c, w, a);
 }
 
-bool NotifyFunc(Node *n,int flags,void *pv)
+bool UpdateFunc(Node *n, int flags, void *pv)
 {
-    if(!flags) printf("Notify: flags = 0 ???%s????\n",n->GetPrompt());
+	if (!(n->GetType() & NTT_VISIBLE)) {
+		return 1;
+	}
+	NodeListItem *li = (NodeListItem*)n->user;
+	pv=pv; //compiler shutup
 
-    if(!(n->GetType() & NTT_VISIBLE)) return 0;
-    
-    NodeListItem *li = (NodeListItem*)pv;
-    if(!li) { printf("Notify: usr=0 <%s> t<%0x>\n",n->GetPrompt(),n->GetType()); return 0; };
+	if (flags & NS_SKIPPED) {
+		li->setVisible(bShowSkipped && bShowDisabled);
+	} else {
+		if (flags & NS_DISABLED) {
+			li->setVisible(bShowDisabled);
+		}
+	}
+	return 1;
+}
 
-    switch(flags)
-    {
+bool NotifyFunc(Node *n, int flags, void *pv)
+{
+	if (!flags) {
+		printf("Notify: flags = 0 ???%s????\n", n->GetPrompt());
+	}
+	if (!(n->GetType() & NTT_VISIBLE)) {
+		return 0;
+	}
+	NodeListItem *li = (NodeListItem*)pv;
+	if (!li) {
+		printf("Notify: usr=0 <%s> t<%0x>\n", n->GetPrompt(), n->GetType());
+		return 0;
+	}
+	switch (flags) {
 	//case NS_STATE: break;
 	//case NS_SKIP: break;
 	case NS_UNSKIP:
-	    li->SetIcon();
-	    if(n->GetType() & NTT_PARENT) n->Enumerate(UpdateFunc,NS_ALL,0);
-	    // due to a setVisible bug which cause Invisible children of a parent
-	    // to be shown when the parent is shown(changed), the above must be done... Qt.....
-	    // to see what I mean: hide skipped, show disabled then toggle
-	    // MTD support while RAM/ROM/Flash is expanded. -> skipped become visible
-	    return 1;//break;
+		li->SetIcon();
+		if (n->GetType() & NTT_PARENT) {
+			n->Enumerate(UpdateFunc, NS_ALL, 0);
+		}
+		// due to a setVisible bug which cause Invisible children of a parent
+		// to be shown when the parent is shown(changed), the above must be done... Qt.....
+		// to see what I mean: hide skipped, show disabled then toggle
+		// MTD support while RAM/ROM/Flash is expanded. -> skipped become visible
+		return 1;//break;
 	//case NS_ENABLE: break;
 	//case NS_DISABLE: break;
-	case NS_EXPAND: li->setOpen(true); return 1;
-	case NS_COLLAPSE: li->setOpen(false); return 1;
-	case NS_PROMPT: li->setText(0,n->GetPrompt()); return 1;
+	case NS_EXPAND:
+		li->setOpen(true);
+		return 1;
+	case NS_COLLAPSE:
+		li->setOpen(false);
+		return 1;
+	case NS_PROMPT:
+		li->setText(0, n->GetPrompt());
+		return 1;
 	case NS_SELECT:	{
-	    QListViewItem *qi = li;
-	    while((qi = qi->parent())) qi->setOpen(true);
-	    li->listView()->setSelected(li,1);
-	    li->listView()->ensureItemVisible(li);
-	    return 1;
+		QListViewItem *qi = li;
+		while((qi = qi->parent())) {
+			qi->setOpen(true);
+		}
+		li->listView()->setSelected(li, 1);
+		li->listView()->ensureItemVisible(li);
+		return 1;
+		}
 	}
-    }
-    li->SetIcon();
-    return 1;
+	li->SetIcon();
+	return 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -329,164 +359,172 @@ bool NotifyFunc(Node *n,int flags,void *pv)
 
 enum
 {
-    mFileLoad = 1,
-    mFileSave,
-    mFileClear,
-    mFileSetPath,
-    mFileOpen,
-    mFileSaveAs,
+	mFileLoad = 1,
+	mFileSave,
+	mFileClear,
+	mFileSetPath,
+	mFileOpen,
+	mFileSaveAs,
 
-    mViewDisabled,
-    mViewSkipped,
-    mViewHorizontal,
-    mViewDependencies,
-    mViewHelpFile,
+	mViewDisabled,
+	mViewSkipped,
+	mViewHorizontal,
+	mViewDependencies,
+	mViewHelpFile,
 
-    mHelpSearch,
-    mHelpAbout,
-    mHelpAboutQt,
+	mHelpSearch,
+	mHelpAbout,
+	mHelpAboutQt,
 };
 
 KKView::~KKView()
 {
-    delete nr;
-    
-    delete IconNo;
-    delete IconMod;
-    delete IconYes;
-    delete IconStr;
-    delete IconMenu;
-    delete IconChoice;
-    delete IconComment;
+	delete nr;
+	delete IconNo;
+	delete IconMod;
+	delete IconYes;
+	delete IconStr;
+	delete IconMenu;
+	delete IconChoice;
+	delete IconComment;
 }
 
-#define ADD_MENU_ITEM(menu,pr,id) \
-    menu->insertItem(pr,id);
+#define ADD_MENU_ITEM(menu, pr, id) \
+	menu->insertItem(pr, id);
 
-#define ADD_MENU_ITEMA(menu,pr,id,key) \
-    menu->insertItem(pr,id); \
-    menu->setAccel(key,id);
+#define ADD_MENU_ITEMA(menu, pr, id, key) \
+	menu->insertItem(pr, id); \
+	menu->setAccel(key, id);
 
-#define ADD_CHECK_MENU_ITEM(menu,pr,id,bb) \
-    menu->insertItem(pr,id); \
-    menu->setItemChecked(id,bb);
+#define ADD_CHECK_MENU_ITEM(menu, pr, id, bb) \
+	menu->insertItem(pr, id); \
+	menu->setItemChecked(id, bb);
 
-#define ADD_CHECK_MENU_ITEMA(menu,pr,id,bb,key) \
-    menu->insertItem(pr,id); \
-    menu->setItemChecked(id,bb); \
-    menu->setAccel(key,id);
-    
+#define ADD_CHECK_MENU_ITEMA(menu, pr, id, bb, key) \
+	menu->insertItem(pr, id); \
+	menu->setItemChecked(id, bb); \
+	menu->setAccel(key, id);
+
 KKView::KKView( int ac, char **av, QWidget *parent, const char *name )
-    : QVBox( parent, name )
+	: QVBox( parent, name )
 {
-    nr=0;
+	nr=0;
 
-    IconNo  = new QPixmap(xpm_no);
-    IconMod = new QPixmap(xpm_mod);
-    IconYes = new QPixmap(xpm_yes);
-    IconStr = new QPixmap(xpm_str);
-    IconMenu = new QPixmap(xpm_menu);
-    IconChoice = new QPixmap(xpm_choice);
-    IconComment = new QPixmap(xpm_comment);
-    
+	IconNo  = new QPixmap(xpm_no);
+	IconMod = new QPixmap(xpm_mod);
+	IconYes = new QPixmap(xpm_yes);
+	IconStr = new QPixmap(xpm_str);
+	IconMenu = new QPixmap(xpm_menu);
+	IconChoice = new QPixmap(xpm_choice);
+	IconComment = new QPixmap(xpm_comment);
+
 // MENUS
-    QMenuBar *mb = new QMenuBar(this,"Menu1");
+	QMenuBar *mb = new QMenuBar(this, "Menu1");
 
-    QPopupMenu *mfile = new QPopupMenu(this,"FileMenu");
-    ADD_MENU_ITEMA(mfile,"&Load",    mFileLoad	, CTRL + Key_L)
-    ADD_MENU_ITEMA(mfile,"&Save",    mFileSave	, CTRL + Key_S)
-    ADD_MENU_ITEM (mfile,"&Clear",   mFileClear)
-    ADD_MENU_ITEM (mfile,"Set &Path",mFileSetPath)
-    mfile->insertSeparator();
-    ADD_MENU_ITEMA(mfile,"&Open",    mFileOpen	, CTRL + Key_O)
-    ADD_MENU_ITEMA(mfile,"Save &as", mFileSaveAs, CTRL + Key_A)
-    mfile->insertSeparator();
-    mfile->insertItem("E&xit",this,SLOT(close()));
-    mb->insertItem("&File",mfile);
-    connect(mfile,SIGNAL(activated(int)),this,SLOT(fileMenu(int)));
-  
-    QPopupMenu *mview = new QPopupMenu(this,"ViewMenu");
-    mview->setCheckable(true);
-    ADD_CHECK_MENU_ITEMA(mview,"&Disabled",     mViewDisabled, bShowDisabled , CTRL + Key_D)
-    ADD_CHECK_MENU_ITEMA(mview,"&Skipped",      mViewSkipped , bShowSkipped  , CTRL + Key_K)
-    ADD_MENU_ITEM(	 mview,"Horizontal",    mViewHorizontal)
-    mview->insertSeparator();
-    ADD_CHECK_MENU_ITEMA(mview,"De&pendencies", mViewDependencies, true      , CTRL + Key_P);
-    ADD_CHECK_MENU_ITEMA(mview,"&Help/File",    mViewHelpFile,     bShowFile , CTRL + Key_H);
-    mb->insertItem("&View",mview);
-    connect(mview,SIGNAL(activated(int)),this,SLOT(viewMenu(int)));
-    
-    QPopupMenu *march = new QPopupMenu(this,"ArchMenu");
-    march->insertItem("i386");
-    mb->insertItem("&Arch",march);
-    connect(march,SIGNAL(activated(int)),this,SLOT(archMenu(int)));
+	QPopupMenu *mfile = new QPopupMenu(this, "FileMenu");
+	ADD_MENU_ITEMA(mfile, "&Load", 	mFileLoad,     CTRL + Key_L)
+	ADD_MENU_ITEMA(mfile, "&Save", 	mFileSave,     CTRL + Key_S)
+	ADD_MENU_ITEM (mfile, "&Clear", mFileClear)
+	ADD_MENU_ITEM (mfile, "Set &Path", mFileSetPath)
+	mfile->insertSeparator();
+	ADD_MENU_ITEMA(mfile, "&Open",    mFileOpen,   CTRL + Key_O)
+	ADD_MENU_ITEMA(mfile, "Save &as", mFileSaveAs, CTRL + Key_A)
+	mfile->insertSeparator();
+	mfile->insertItem("E&xit", this, SLOT(close()));
+	mb->insertItem("&File", mfile);
+	connect(mfile, SIGNAL(activated(int)), this, SLOT(fileMenu(int)));
 
-    QPopupMenu *mhelp = new QPopupMenu(this,"HelpMenu");
-    ADD_MENU_ITEMA(mhelp, "&Search"   ,mHelpSearch , CTRL + Key_F)
-    ADD_MENU_ITEM (mhelp, "&About"    ,mHelpAbout  )
-    ADD_MENU_ITEM (mhelp, "About &Qt" ,mHelpAboutQt)
-    mb->insertItem("&Help",mhelp);
-    connect(mhelp,SIGNAL(activated(int)),this,SLOT(helpMenu(int)));
+	QPopupMenu *mview = new QPopupMenu(this, "ViewMenu");
+	mview->setCheckable(true);
+	ADD_CHECK_MENU_ITEMA(mview, "&Disabled", mViewDisabled, bShowDisabled, CTRL + Key_D)
+	ADD_CHECK_MENU_ITEMA(mview, "&Skipped",  mViewSkipped,  bShowSkipped,  CTRL + Key_K)
+	ADD_MENU_ITEM(	 mview, "Horizontal", 	 mViewHorizontal)
+	mview->insertSeparator();
+	ADD_CHECK_MENU_ITEMA(mview, "De&pendencies", mViewDependencies, true      , CTRL + Key_P);
+	ADD_CHECK_MENU_ITEMA(mview, "&Help/File",    mViewHelpFile,    	bShowFile , CTRL + Key_H);
+	mb->insertItem("&View", mview);
+	connect(mview, SIGNAL(activated(int)), this, SLOT(viewMenu(int)));
+
+	QPopupMenu *march = new QPopupMenu(this, "ArchMenu");
+	march->insertItem("i386");
+	mb->insertItem("&Arch", march);
+	connect(march, SIGNAL(activated(int)), this, SLOT(archMenu(int)));
+
+	QPopupMenu *mhelp = new QPopupMenu(this, "HelpMenu");
+	ADD_MENU_ITEMA(mhelp, "&Search",   mHelpSearch , CTRL + Key_F)
+	ADD_MENU_ITEM (mhelp, "&About",    mHelpAbout  )
+	ADD_MENU_ITEM (mhelp, "About &Qt", mHelpAboutQt)
+	mb->insertItem("&Help", mhelp);
+	connect(mhelp, SIGNAL(activated(int)), this, SLOT(helpMenu(int)));
 
 // TREES & HELP
-    QSplitter *qs = new QSplitter(Qt::Horizontal,this,"Split1");
-    QColor bcolor = QColor(150, 150, 150);
-  
-    // folders
-    folders = new NodeView(qs,"Folders1");
-    folders->setPaletteBackgroundColor(bcolor);
-    folders->header()->setClickEnabled( FALSE );
-    folders->addColumn( "Folder" );
-    folders->setSorting(-1,0);
-    // ---- fill tree here ----
-    initFolders(0,0,ac,av);
-    folders->setRootIsDecorated( TRUE );
-    qs->setResizeMode( folders, QSplitter::KeepSize );
+	QSplitter *qs = new QSplitter(Qt::Horizontal, this, "Split1");
+	QColor bcolor = QColor(150, 150, 150);
 
-    QSplitter *qs2 = new QSplitter(Qt::Vertical,qs,"Split2");
-    // folders2
-    folders2 = new NodeView(qs2,"Folders2");
-    folders2->setPaletteBackgroundColor(bcolor);
-    folders2->header()->setClickEnabled( FALSE );
-    folders2->addColumn( "Dependencies" );
-    folders2->setSorting(-1,0);
-    
-    // helptext
-    helptext = new HelpText(qs2,"Text1");
-    helptext->setPaletteBackgroundColor(bcolor);
-    helptext->setNodeRoot(&nr);
-    helptext->setTextFormat(Qt::PlainText);
-    helptext->setText("Click on any item to display help.\n");
-    helptext->setWordWrap(QTextEdit::NoWrap);
-    //helptext->setReadOnly(true);
+	// folders
+	folders = new NodeView(qs, "Folders1");
+	folders->setPaletteBackgroundColor(bcolor);
+	folders->header()->setClickEnabled( FALSE );
+	folders->addColumn( "Folder" );
+	folders->setSorting(-1, 0);
+	// ---- fill tree here ----
+	initFolders(0, 0, ac, av);
+	folders->setRootIsDecorated( TRUE );
+	qs->setResizeMode( folders, QSplitter::KeepSize );
 
-    connect(folders,SIGNAL(selectionChanged(QListViewItem*)),
-	    this,SLOT(ShowDeps(QListViewItem*)));
+	QSplitter *qs2 = new QSplitter(Qt::Vertical, qs, "Split2");
+	// folders2
+	folders2 = new NodeView(qs2, "Folders2");
+	folders2->setPaletteBackgroundColor(bcolor);
+	folders2->header()->setClickEnabled( FALSE );
+	folders2->addColumn( "Dependencies" );
+	folders2->setSorting(-1, 0);
 
-    connect(folders2,SIGNAL(selectionChanged(QListViewItem*)),
-	    helptext,SLOT(ShowHelp(QListViewItem*)));
-    
-    connect(helptext,SIGNAL(cursorPositionChanged(int,int)),
-	    helptext,SLOT(linkTo(int,int)));
+	// helptext
+	helptext = new HelpText(qs2, "Text1");
+	helptext->setPaletteBackgroundColor(bcolor);
+	helptext->setNodeRoot(&nr);
+	helptext->setTextFormat(Qt::PlainText);
+	helptext->setText("Click on any item to display help.\n");
+	helptext->setWordWrap(QTextEdit::NoWrap);
+	//helptext->setReadOnly(true);
 
-    QValueList<int> lst2; lst2.append(130); lst2.append(470);
-    qs2->setSizes(lst2);
+	connect(folders, SIGNAL(selectionChanged(QListViewItem*)),
+		this, SLOT(ShowDeps(QListViewItem*)));
 
-    QValueList<int> lst; lst.append(350); lst.append(440);
-    qs->setSizes( lst );
+	connect(folders2, SIGNAL(selectionChanged(QListViewItem*)),
+		helptext, SLOT(ShowHelp(QListViewItem*)));
+
+	connect(helptext, SIGNAL(cursorPositionChanged(int, int)),
+		helptext, SLOT(linkTo(int, int)));
+
+	QValueList<int> lst2; lst2.append(130);
+	lst2.append(470);
+	qs2->setSizes(lst2);
+
+	QValueList<int> lst; lst.append(350);
+	lst.append(440);
+	qs->setSizes( lst );
 }
 
 void KKView::closeEvent(QCloseEvent *e)
 {
-    if(!nr->Modified()) { e->accept(); return; }
-
-    switch(QMessageBox::warning(this,"kkonfig","Save before closing ?",
-		QMessageBox::Yes,QMessageBox::No,QMessageBox::Cancel))
-    {
-    case QMessageBox::Yes:	nr->Save(0);
-    case QMessageBox::No:	e->accept(); break;
-    case QMessageBox::Cancel:	e->ignore(); break;
-    }
+	if (!nr->Modified()) {
+		e->accept();
+		return;
+	}
+	switch (QMessageBox::warning(this, "kkonfig", "Save before closing ?",
+		QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel))
+	{
+	case QMessageBox::Yes:
+		nr->Save(0);
+	case QMessageBox::No:
+		e->accept();
+		break;
+	case QMessageBox::Cancel:
+		e->ignore();
+		break;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -496,83 +534,121 @@ void KKView::closeEvent(QCloseEvent *e)
 // qt -insert- children thus reversing EVERYTHING.........
 struct RW_UserData
 {
-    NodeListItem *parent,*last;
+	NodeListItem *parent, *last;
 };
 
-bool enumFunc(Node *n,int flags,void *pv)
+bool enumFunc(Node *n, int flags, void *pv)
 {
-    // debug
-    if(flags & NS_EXIT) { printf("Unexpected NS_EXIT...\n"); return 1; }
-    if(n->user) { printf("enum !!! uservalue non zero !!! %s\n",n->GetPrompt()); n->user=0; }
-
-    if(!(n->GetType() & NTT_VISIBLE)) return 1;
-    
-    RW_UserData *prwd = (RW_UserData*)pv;
-    
-    NodeListItem *li = new NodeListItem(prwd->parent,prwd->last,n);
-    prwd->last = li;
-
-    if(n->GetType() & NTT_PARENT)
-    {
-	switch(n->GetType())
-	{
-	case NT_MENU: if(n->GetParent(NT_ROOT)) break; else goto def; // open in deptree
-	case NT_CHOICEP: if(!n->GetParent(NT_ROOT)) break; // don't open in deptree
-def:	default: li->setOpen(true);
+	// debug
+	if (flags & NS_EXIT) {
+		printf("Unexpected NS_EXIT...\n");
+		return 1;
 	}
-	RW_UserData rwd; rwd.parent=li; rwd.last=0;
-	n->Enumerate(enumFunc,NS_T_ALL,&rwd);
-    }
+	if (n->user) {
+		printf("enum !!! uservalue non zero !!! %s\n", n->GetPrompt());
+		n->user = 0;
+	}
+	if (!(n->GetType() & NTT_VISIBLE)) {
+		return 1;
+	}
+	RW_UserData *prwd = (RW_UserData*)pv;
 
-    return 1;
+	NodeListItem *li = new NodeListItem(prwd->parent, prwd->last, n);
+	prwd->last = li;
+
+	if (n->GetType() & NTT_PARENT) {
+		switch (n->GetType())
+		{
+		case NT_MENU:
+			if (n->GetParent(NT_ROOT)) {
+				break;
+			} else {
+				goto def; // open in deptree
+			}
+		case NT_CHOICEP:
+			if (!n->GetParent(NT_ROOT)) {
+				break; // don't open in deptree
+			}
+def:	default:
+			li->setOpen(true);
+		}
+		RW_UserData rwd; rwd.parent=li; rwd.last=0;
+		n->Enumerate(enumFunc, NS_T_ALL, &rwd);
+	}
+	return 1;
 }
 
-void KKView::initFolders(const char *arch,const char *path,int ac,char **av)
+void KKView::initFolders(const char *arch, const char *path, int ac, char **av)
 {
-    NodeRoot *nnr = new NodeRoot();
+	NodeRoot *nnr = new NodeRoot();
 
-    int ret;
-    if(ac & !nr) // initial init ?
-	{ if(!(ret = nnr->Init_CmdLine(ac,av) & 7)) goto done; nr=nnr; } else
-	{ if(!(ret = nnr->Init(arch,path) & 7)) goto done; delete nnr; }
-
-	switch(ret)
-	{
-	    case 1:	fileMenu(mFileSetPath); break;
-	    case 2: {	QMessageBox mb(this); 
-			mb.information(this,"Warning !","Invalid Architecture selected.");
-			goto fillarch; }
-	    case 3: {	QMessageBox mb(this); mb.critical(this,"Warning !","Parsing failed."); break; }
-	    case 4:	break; // silent fail
+	int ret;
+	if (ac & !nr) { // initial init ?
+		if (!(ret = nnr->Init_CmdLine(ac, av) & 7)) {
+			goto done;
+		}
+		nr=nnr;
+	} else {
+		if (!(ret = nnr->Init(arch, path) & 7)) {
+			goto done;
+		}
+			delete nnr;
 	}
-	
+	switch (ret) {
+		case 1:
+			fileMenu(mFileSetPath);
+			break;
+		case 2: {
+			QMessageBox mb(this);
+			mb.information(this, "Warning !", "Invalid Architecture selected.");
+			goto fillarch;
+		}
+		case 3: {
+			QMessageBox mb(this);
+			mb.critical(this, "Warning !", "Parsing failed.");
+			break;
+		}
+		case 4:
+			break; // silent fail
+	}
 	printf("init fail...\n");
 	return;
 done:
 
-    if(nr) delete nr; nr = nnr;
-    folders->clear();
+	if (nr) {
+		delete nr;
+	}
+	nr = nnr;
+	folders->clear();
 
 fillarch:
-    QPopupMenu *pm = (QPopupMenu*)child("ArchMenu");	// fill the arch menu
-    if(!pm) { printf("no archmenu\n"); return; }
-    pm->clear();
+	QPopupMenu *pm = (QPopupMenu*)child("ArchMenu");	// fill the arch menu
+	if (!pm) {
+		printf("no archmenu\n");
+		return;
+	}
+	pm->clear();
 
-    QString Arch = (char *)nr->GetArch(); int i=1;
-    for(const char *p = nr->GetFirstArch(); p; p = nr->GetNextArch(),i++)
-    {
-	pm->insertItem(p,i);
-	pm->setCheckable(true);
-	if(Arch == p) pm->setItemChecked(i,true);
-    }
-    if(ret) return; // fill only the arch menu
-    
-    nr->GetSymbols()->Ntfy = NotifyFunc; 		// set notifications
-    
-    NodeListItem *li = new NodeListItem(folders,nr);	// add the root
-    RW_UserData rwd; rwd.parent = li; rwd.last=0;
-    nr->Enumerate(enumFunc,NS_T_ALL,&rwd);		// and the rest
-    li->setOpen(true);
+	QString Arch = (char *)nr->GetArch();
+	int i = 1;
+	for (const char *p = nr->GetFirstArch(); p; p = nr->GetNextArch(), i++) {
+		pm->insertItem(p, i);
+		pm->setCheckable(true);
+		if (Arch == p) {
+			pm->setItemChecked(i, true);
+		}
+	}
+	if (ret) {
+		return; // fill only the arch menu
+	}
+	nr->GetSymbols()->Ntfy = NotifyFunc; 		// set notifications
+
+	NodeListItem *li = new NodeListItem(folders, nr);	// add the root
+	RW_UserData rwd;
+	rwd.parent = li;
+	rwd.last = 0;
+	nr->Enumerate(enumFunc, NS_T_ALL, &rwd);		// and the rest
+	li->setOpen(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -581,194 +657,233 @@ fillarch:
 
 void HelpText::FileInit()
 {
-    if(bFileNP) { bFileNP=0; return; }
-    iFileStrs = -1;
-    for(int i=0; i<10; i++)
-	FileStrs[i][0] = 0;
+	if (bFileNP) {
+		bFileNP=0;
+		return;
+	}
+	iFileStrs = -1;
+	for (int i = 0; i < 10; i++) {
+		FileStrs[i][0] = 0;
+	}
 }
 
-void HelpText::FilePush(char *s,int l,int lfrom=0)
+void HelpText::FilePush(char *s, int l, int lfrom=0)
 {
-    if(lfrom) FileLines[iFileStrs] = lfrom;
-	
-    if(bFileNP) { bFileNP=0; return; }
-    if(++iFileStrs > 9) { iFileStrs = 10; return; }
-    FileLines[iFileStrs] = l;
-    strcpy(FileStrs[iFileStrs],s);
-    for(int i=iFileStrs+1; i<10; i++) FileStrs[i][0]=0; // clear
+	if (lfrom) {
+		FileLines[iFileStrs] = lfrom;
+	}
+	if (bFileNP) {
+		bFileNP=0;
+		return;
+	}
+	if (++iFileStrs > 9) {
+		iFileStrs = 10;
+		return;
+	}
+	FileLines[iFileStrs] = l;
+	strcpy(FileStrs[iFileStrs], s);
+	for (int i = iFileStrs + 1; i < 10; i++) {
+		FileStrs[i][0] = 0; // clear
+	}
 }
 
 void HelpText::FileNext(int i)
 {
-    if(++iFileStrs < 9 && FileStrs[iFileStrs][0]) {
-	bFileNP=1;
-	if(i>-1 && iFileStrs > -1) FileLines[iFileStrs-1]=i;
-	ShowFile(FileStrs[iFileStrs],FileLines[iFileStrs]);
-    }else{
-	if(iFileStrs > 9) iFileStrs = 9; else
-	    if(!FileStrs[iFileStrs][0]) iFileStrs--;
-    }
+	if (++iFileStrs < 9 && FileStrs[iFileStrs][0]) {
+		bFileNP = 1;
+		if (i>-1 && iFileStrs > -1) {
+			FileLines[iFileStrs-1] = i;
+		}
+		ShowFile(FileStrs[iFileStrs], FileLines[iFileStrs]);
+	} else {
+		if (iFileStrs > 9) {
+			iFileStrs = 9;
+		} else {
+			if (!FileStrs[iFileStrs][0]) {
+				iFileStrs--;
+			}
+		}
+	}
 }
 
 void HelpText::FilePrev(int i)
 {
-    if(--iFileStrs > -1) {
-	bFileNP=1;
-	if(i>-1 && iFileStrs < 10) FileLines[iFileStrs+1]=i;
-    	ShowFile(FileStrs[iFileStrs],FileLines[iFileStrs]);
-    } else {
-	if(iFileStrs < -1) iFileStrs = -1;
-	if(HelpNode) {
-	    bFileNP=1;
-	    bool t = bShowFile; bShowFile = 0;
-	    ShowHelp((QListViewItem*)HelpNode->user);
-	    bShowFile = t;
+	if (--iFileStrs > -1) {
+		bFileNP = 1;
+		if (i > -1 && iFileStrs < 10) {
+			FileLines[iFileStrs + 1] = i;
+		}
+		ShowFile(FileStrs[iFileStrs], FileLines[iFileStrs]);
+	} else {
+		if (iFileStrs < -1) {
+			iFileStrs = -1;
+		}
+		if (HelpNode) {
+			bFileNP = 1;
+			bool t = bShowFile;
+			bShowFile = 0;
+			ShowHelp((QListViewItem*)HelpNode->user);
+			bShowFile = t;
+		}
 	}
-    }
 }
 
 void HelpText::keyPressEvent(QKeyEvent *e)
 {
-    int l,i;
-    getCursorPosition(&l,&i); l++;
-    switch(e->key())
-    {
+	int l, i;
+	getCursorPosition(&l, &i);
+	l++;
+	switch (e->key()) {
 	case Qt::Key_Escape:
 	case Qt::Key_Backspace:
 	case Qt::Key_Left:
-	    FilePrev(l);
-	    break;
+		FilePrev(l);
+		break;
 	case Qt::Key_Space:
 	case Qt::Key_Return:
 	case Qt::Key_Enter:
 	case Qt::Key_Right:
-	    FileNext(l);
-	    break;
+		FileNext(l);
+		break;
 	default:
-	    QTextEdit::keyPressEvent(e);
-	    return;
-    }
-    e->ignore();
+		QTextEdit::keyPressEvent(e);
+		return;
+	}
+	e->ignore();
 }
 
 //-----------------------------------------------------------------------------
 // help handling
 
-NodeListItem *OldN=0;
+NodeListItem *OldN = 0;
+
 void KKView::ShowDeps( QListViewItem *li )
 {
-    if ( !li ) return;
+	if (!li) {
+		return;
+	}
+	if (OldN && !OldN->node->GetParent(NT_ROOT)) {
+		OldN = 0;
+	}
+	folders2->clear();
+	NodeListItem *n = ( NodeListItem* )li;
+	if (!n) {
+		printf("showdeps n=0\n");
+		return;
+	}
+	NodeDListP *nd = (NodeDListP*)n->node->GetDepTree();
+	if (!nd) {
+		printf("showdeps nd=0\n");
+		return;
+	}
+	NodeListItem *l = new NodeListItem(folders2, nd);	// add the root
+	RW_UserData rwd;
+	rwd.parent = l;
+	rwd.last = 0;
+	nd->Enumerate(enumFunc, NS_T_ALL, &rwd);		// and the rest
+	l->setOpen(true);
+	nd->Update(1);
 
-    if(OldN && !OldN->node->GetParent(NT_ROOT)) OldN=0;
-	
-    folders2->clear();
-    NodeListItem *n = ( NodeListItem* )li;
-    if(!n) { printf("showdeps n=0\n"); return; }
-    
-    NodeDListP *nd = (NodeDListP*)n->node->GetDepTree();
-    if(!nd) { printf("showdeps nd=0\n"); return; }
-
-    NodeListItem *l = new NodeListItem(folders2,nd);	// add the root
-    RW_UserData rwd; rwd.parent = l; rwd.last=0;
-    nd->Enumerate(enumFunc,NS_T_ALL,&rwd);		// and the rest
-    l->setOpen(true);
-    nd->Update(1);
-
-    helptext->ShowHelp(li);
+	helptext->ShowHelp(li);
 }
 
 void HelpText::ShowHelp( QListViewItem *li )
 {
-    if ( !li ) return;
-    NodeListItem *n = ( NodeListItem* )li;
-    if(!n->node) { printf("sc: n->node==0\n"); return ; }
+	if (!li) {
+		return;
+	}
+	NodeListItem *n = ( NodeListItem* )li;
+	if (!n->node) {
+		printf("sc: n->node==0\n");
+		return;
+	}
+	// rename helper
+	if (OldN != n && OldN) {
+		if (OldN && OldN->node->GetType() & NTT_STR) {
+			OldN->setText(0, OldN->node->GetPrompt());
+			OldN->setRenameEnabled(0, false);
+		}
+		if (n && n->node->GetType() & NTT_STR && n->node->Get() > 3) {
+			n->setText(0, (char*)n->node->Get());
+			n->setRenameEnabled(0, true);
+		}
+	}
+	OldN = n;
 
-    // rename helper
-    if(OldN != n && OldN)
-    {
-	if(OldN && OldN->node->GetType() & NTT_STR)
-	{
-	    OldN->setText(0,OldN->node->GetPrompt());
-	    OldN->setRenameEnabled(0,false);
+	FileInit();
+	HelpNode = n->node;
+
+	// show file instead ?
+	int ll = n->node->GetLine();
+	char *pt, *nn = n->node->GetSource();
+	if (bShowFile && (pt = (*pnr)->GetFileH(nn))) {
+		FilePush(nn, ll);
+		ShowText(pt, ll);
+		return;
 	}
 
-	if(n && n->node->GetType() & NTT_STR && n->node->Get() > 3)
-	{
-	    n->setText(0,(char*)n->node->Get());
-	    n->setRenameEnabled(0,true);
+	// start help
+	char *p = (*pnr)->GetHelpH(n->node);
+	if (!p) {
+		return;
 	}
-    }
-    OldN = n;
-
-    FileInit();
-    HelpNode = n->node;
-
-    // show file instead ?
-    int ll = n->node->GetLine();
-    char *pt,*nn = n->node->GetSource();
-    if(bShowFile && (pt = (*pnr)->GetFileH(nn)))
-    {
-	FilePush(nn,ll);
-	ShowText(pt,ll);
+	ShowText(p, -1);
 	return;
-    }
-
-    // start help
-    char *p = (*pnr)->GetHelpH(n->node);
-    if(!p) return;
-    ShowText(p,-1);
-    return;
 }
 
-void HelpText::linkTo(int para,int pos)
+void HelpText::linkTo(int para, int pos)
 {
-    // if in a link get the filename
-    QString s = text(para);
+	// if in a link get the filename
+	QString s = text(para);
 
-    int l;
-    char *p,*fn;
-    if(!(p = (*pnr)->GetLinkFileH(s,pos,0,0,&l,&fn))) return;
-    FilePush(fn,l ? l : -1,para+1);
-    ShowText(p,l);
-}
-
-void HelpText::ShowFile(char *cc,int ll)
-{
-    char *p = (*pnr)->GetFileH(cc);
-    if(!p) return;
-    FilePush(cc,ll);
-    ShowText(p,ll);
-}
-
-void HelpText::ShowText(char *cc,int ll)
-{
-    QString qs(cc);
-    setText(qs);
-
-    // hilight the links
-    for(int i=0,j=paragraphs(); i<j; i++)
-    {
-	QString s = text(i); //l=0;
-	char *st,*e;
-	const char *b = s;
-	for(e = (char*)b; (*pnr)->GetLink(e,-1,&st,&e);)
-	{
-	    setSelection(i,st-b,i,e-b);// l=r;
-	    setColor(QColor(0,0,255));
+	int l;
+	char *p, *fn;
+	if (!(p = (*pnr)->GetLinkFileH(s, pos, 0, 0, &l, &fn))) {
+		return;
 	}
-    }
-    setSelection(0,0,0,0);
+	FilePush(fn, l ? l : -1, para+1);
+	ShowText(p, l);
+}
 
-    // hilight the linked line and go to it if specified
-    setSelection(ll-1,0,ll,0);	
-    setColor(QColor(255,0,255));
-    setSelection(ll-1,0,ll-1,0);
-    insertAt(">>>",ll-1,0);
+void HelpText::ShowFile(char *cc, int ll)
+{
+	char *p = (*pnr)->GetFileH(cc);
+	if (!p) {
+		return;
+	}
+	FilePush(cc, ll);
+	ShowText(p, ll);
+}
 
-    //ensureCursorVisible(); // don't seem to work....?????
-    int hh=0; // so lets do this UGLY hack.........
-    for(int xx=0; xx<=ll; xx++) hh+=paragraphRect(xx).height();
-    ensureVisible(10,hh,0,99999);
+void HelpText::ShowText(char *cc, int ll)
+{
+	QString qs(cc);
+	setText(qs);
+
+	// hilight the links
+	for (int i = 0, j = paragraphs(); i < j; i++) {
+		QString s = text(i); //l=0;
+		char *st, *e;
+		const char *b = s;
+		for (e = (char*)b; (*pnr)->GetLink(e, -1, &st, &e);) {
+			setSelection(i, st - b, i, e - b);// l=r;
+			setColor(QColor(0, 0, 255));
+		}
+	}
+	setSelection(0, 0, 0, 0);
+
+	// hilight the linked line and go to it if specified
+	setSelection(ll-1, 0, ll, 0);
+	setColor(QColor(255, 0, 255));
+	setSelection(ll-1, 0, ll-1, 0);
+	insertAt(">>>", ll-1, 0);
+
+	//ensureCursorVisible(); // don't seem to work....?????
+	int hh=0; // so lets do this UGLY hack.........
+	for (int xx = 0; xx <= ll; xx++) {
+		hh+=paragraphRect(xx).height();
+	}
+	ensureVisible(10, hh, 0, 99999);
 }
 
 //-----------------------------------------------------------------------------
@@ -776,175 +891,202 @@ void HelpText::ShowText(char *cc,int ll)
 
 void KKView::fileMenu(int id)
 {
-    switch(id)
-    {
-    case mFileLoad: nr->Load(0); break;
-    case mFileSave: nr->Save(0); break;
-    case mFileClear: nr->Load(""); break;
-    case mFileSetPath:
-	{
-            QFileDialog fd;
-	    fd.setMode(QFileDialog::DirectoryOnly);
-	    QString qs = fd.getExistingDirectory(0,this,"dirdialog","Set Kernel Path");
-	    initFolders(0,qs);
-	    break;
+	switch (id) {
+		case mFileLoad:
+			nr->Load(0);
+			break;
+		case mFileSave:
+			nr->Save(0);
+			break;
+		case mFileClear:
+			nr->Load("");
+			break;
+		case mFileSetPath: {
+			QFileDialog fd;
+			fd.setMode(QFileDialog::DirectoryOnly);
+			QString qs = fd.getExistingDirectory(0, this, "dirdialog", "Set Kernel Path");
+			initFolders(0, qs);
+			break;
+		}
+		case mFileOpen: {
+			QFileDialog fd;
+			nr->Load(fd.getOpenFileName(0, 0, this, "opendialog", "Open config file"));
+			break;
+		}
+		case mFileSaveAs: {
+			QFileDialog fd;
+			nr->Save(fd.getSaveFileName(0, 0, this, "savedialog", "Save config file"));
+			break;
+		}
 	}
-    case mFileOpen:
-	{
-            QFileDialog fd;
-	    nr->Load(fd.getOpenFileName(0,0,this,"opendialog","Open config file"));
-	    break;
-	}
-    case mFileSaveAs:
-	{
-            QFileDialog fd;
-	    nr->Save(fd.getSaveFileName(0,0,this,"savedialog","Save config file"));
-	    break;
-	}
-    }
 }
 
 void KKView::viewMenu(int id)
 {
-    QPopupMenu *pm = (QPopupMenu*)child("ViewMenu");
-    if(!pm) { printf("no viewmenu\n"); return; }
-    
-    switch(id)
-    {
-    case mViewDisabled:
-	    bShowDisabled=!bShowDisabled;
-	    pm->setItemChecked(mViewDisabled,bShowDisabled);
-	    pm->setItemChecked(mViewSkipped,bShowSkipped && bShowDisabled);
-	    nr->Enumerate(UpdateFunc,NS_ALL,0);
-	    break;
-    case mViewSkipped:
-	    bShowSkipped=!bShowSkipped;
-	    pm->setItemChecked(mViewSkipped,bShowSkipped && bShowDisabled);
-	    nr->Enumerate(UpdateFunc,NS_ALL,0);
-	    break;
-    case mViewHorizontal:
-	{
-	    QSplitter *qs = (QSplitter*)child("Split1");
-	    if(!qs) { printf("no split1\n"); break; }
-
-	    if(qs->orientation() == Qt::Horizontal)
-	    {
-		pm->changeItem(id,"Vertical");
-		qs->setOrientation(Qt::Vertical);
-	    }else
-	    {
-		pm->changeItem(id,"Horizontal");
-		qs->setOrientation(Qt::Horizontal);
-	    }
-	    break;
+	QPopupMenu *pm = (QPopupMenu*)child("ViewMenu");
+	if (!pm) {
+		printf("no viewmenu\n");
+		return;
 	}
-    case mViewDependencies:
-	{
-	    if(pm->isItemChecked(id))
-	    {
-		folders2->hide();
-		pm->setItemChecked(id,false);
-	    }else
-	    {
-		folders2->show();
-		pm->setItemChecked(id,true);
-	    }
-	    break;
+	switch (id) {
+		case mViewDisabled:
+			bShowDisabled=!bShowDisabled;
+			pm->setItemChecked(mViewDisabled, bShowDisabled);
+			pm->setItemChecked(mViewSkipped, bShowSkipped && bShowDisabled);
+			nr->Enumerate(UpdateFunc, NS_ALL, 0);
+			break;
+		case mViewSkipped:
+			bShowSkipped=!bShowSkipped;
+			pm->setItemChecked(mViewSkipped, bShowSkipped && bShowDisabled);
+			nr->Enumerate(UpdateFunc, NS_ALL, 0);
+			break;
+		case mViewHorizontal: {
+			QSplitter *qs = (QSplitter*)child("Split1");
+			if (!qs) {
+				printf("no split1\n");
+				break;
+			}
+			if (qs->orientation() == Qt::Horizontal) {
+				pm->changeItem(id, "Vertical");
+				qs->setOrientation(Qt::Vertical);
+			} else {
+				pm->changeItem(id, "Horizontal");
+				qs->setOrientation(Qt::Horizontal);
+			}
+			break;
+		}
+		case mViewDependencies: {
+			if (pm->isItemChecked(id)) {
+				folders2->hide();
+				pm->setItemChecked(id, false);
+			} else {
+				folders2->show();
+				pm->setItemChecked(id, true);
+			}
+			break;
+		}
+		case mViewHelpFile: {
+			bShowFile = !bShowFile;
+			pm->setItemChecked(id, bShowFile);
+		}
 	}
-    case mViewHelpFile:
-	{
-	    bShowFile = !bShowFile;
-	    pm->setItemChecked(id,bShowFile);
-	}
-    }
 }
 
 void KKView::archMenu(int id)
 {
-    QPopupMenu *pm = (QPopupMenu*)child("ArchMenu");
-    if(!pm) { printf("no archmenu\n"); return; }
- 
-    QString str = nr->GetPath();
-    initFolders(pm->text(id),str);
+	QPopupMenu *pm = (QPopupMenu*)child("ArchMenu");
+	if (!pm) {
+		printf("no archmenu\n");
+		return;
+	}
+	QString str = nr->GetPath();
+	initFolders(pm->text(id), str);
 }
 
 
-bool MatchStr(const char *a,const char *b)
+bool MatchStr(const char *a, const char *b)
 {
-	if(!a || !b) return 0;
-
+	if (!a || !b) {
+		return 0;
+	}
 	int la = strlen(a); // search for -- b in a --
 	int lb = strlen(b);
 	int lc = la-lb;
 
-	if(lb > la) return 0;
-	for(int i=0; i<=lc; i++) if(!strncmp(b,a+i,lb)) return 1;
+	if (lb > la) {
+		return 0;
+	}
+	for (int i = 0; i <= lc; i++) {
+		if (!strncmp(b, a + i, lb)) {
+			return 1;
+		}
+	}
 	return 0;
 }
 
 Node *sn=0;
 
-bool PromptSf(Node *n,void *pv)
+bool PromptSf(Node *n, void *pv)
 {
-	if(MatchStr(n->GetPrompt(),(char*)pv)) {
-		n->Select(); sn=n;
+	if (MatchStr(n->GetPrompt(), (char*)pv)) {
+		n->Select();
+		sn = n;
 		return 1;
 	}
 	return 0;
 }
 
-bool ConfigSf(Node *n,void *pv)
+bool ConfigSf(Node *n, void *pv)
 {
-	if(MatchStr(n->GetSymbol(),(char*)pv)) {
-		n->Select(); sn=n;
+	if (MatchStr(n->GetSymbol(), (char*)pv)) {
+		n->Select();
+		sn = n;
 		return 1;
 	}
 	return 0;
 }
 
 // to search from elsewhere in this app use:
-// sn->Search(PromptSf/ConfigSf,<string>);
+// sn->Search(PromptSf/ConfigSf, <string>);
 
 void KKView::Search(int id)
 {
-    if(!sn) sn=nr;
-    QLineEdit *le = (QLineEdit*)child("dLgLiNe",0,TRUE);
-    const char *cc = le ? le->text() : "-+-";
-    switch(id)
-    {
-	case 0: if(!sn->Search(PromptSf,(char*)cc)) sn=nr; break; //prompt
-	case 1: if(!sn->Search(ConfigSf,(char*)cc)) sn=nr; break; //CONFIG_
-	case 2:					    sn=nr; break; //reset
-    }
-    if(sn == nr) nr->Select();
+	if (!sn) {
+		sn = nr;
+	}
+	QLineEdit *le = (QLineEdit*)child("dLgLiNe", 0, TRUE);
+	const char *cc = le ? le->text() : "-+-";
+	switch (id) {
+	case 0: //prompt
+		if (!sn->Search(PromptSf, (char*)cc)) {
+			sn=nr;
+		}
+		break;
+	case 1: //CONFIG_
+		if (!sn->Search(ConfigSf, (char*)cc)) {
+			sn = nr;
+		}
+		break;
+	case 2: //reset
+		sn = nr;
+		break;
+	}
+	if (sn == nr) {
+		nr->Select();
+	}
 }
 
 void KKView::helpMenu(int id)
 {
-    QMessageBox mb(this);
-    switch(id)
-    {
-    case mHelpSearch:	{
-	    static QString str="";
-	    QDialog d(this,"SearchDlg");
-	    QVBoxLayout *vb = new QVBoxLayout(&d,11,6);
-	        QLineEdit *le = new QLineEdit(&d,"dLgLiNe");	 vb->addWidget(le);
-		QButtonGroup *hb = new QButtonGroup(1,QGroupBox::Vertical,"",&d); vb->addWidget(hb);
-		connect(hb,SIGNAL(clicked(int)),this,SLOT(Search(int)));
-	    QPushButton *b1 = new QPushButton("&Prompt" ,hb); b1=b1;
-	    QPushButton *b2 = new QPushButton("&CONFIG_",hb); b2=b2;
-	    QPushButton *b3 = new QPushButton("&Reset"  ,hb); b3=b3;
-	    QPushButton *b4 = new QPushButton("&Close"  ,hb);
-	    connect(b4,SIGNAL(clicked()),&d,SLOT(reject()));
-	    le->setText(str); d.exec(); str=le->text();
-	    break;    	}
-    case mHelpAbout:
-	mb.about(this,"About kkonfig",CopyRight);
-	break;
-    case mHelpAboutQt:
-	mb.aboutQt(this);
-	break;
-    }
+	QMessageBox mb(this);
+	switch (id)
+	{
+	case mHelpSearch:	{
+		static QString str = "";
+		QDialog d(this, "SearchDlg");
+		QVBoxLayout *vb = new QVBoxLayout(&d, 11, 6);
+		QLineEdit *le = new QLineEdit(&d, "dLgLiNe");
+		vb->addWidget(le);
+		QButtonGroup *hb = new QButtonGroup(1, QGroupBox::Vertical, "", &d);
+		vb->addWidget(hb);
+		connect(hb, SIGNAL(clicked(int)), this, SLOT(Search(int)));
+		QPushButton *b1 = new QPushButton("&Prompt" , hb); b1=b1;
+		QPushButton *b2 = new QPushButton("&CONFIG_", hb); b2=b2;
+		QPushButton *b3 = new QPushButton("&Reset"  , hb); b3=b3;
+		QPushButton *b4 = new QPushButton("&Close"  , hb);
+		connect(b4, SIGNAL(clicked()), &d, SLOT(reject()));
+		le->setText(str);
+		d.exec();
+		str = le->text();
+		break;
+	}
+	case mHelpAbout:
+		mb.about(this, "About kkonfig", CopyRight);
+		break;
+	case mHelpAboutQt:
+		mb.aboutQt(this);
+		break;
+	}
 }
 
 //-----------------------------------------------------------------------------
