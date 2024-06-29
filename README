@@ -38,7 +38,10 @@ How to make it?
     To make kkonfig you need qt3
 
     Download Qt3 from https://download.qt.io/archive/qt/3/
-    ./configure -platform linux-g++-64 -shared
+    Install libntirpc
+    Fix this error, I removed the typedef from the enum and added enum vio_type in the struct
+    /usr/include/ntirpc/rpc/xdr.h:136:18: error: declaration of ‘vio_type xdr_vio::vio_type’ changes meaning of ‘vio_type’ [-fpermissive]
+    ./configure -platform linux-g++-64 -shared -L /usr/lib/x86_64-linux-gnu -I /usr/include/ntirpc/
     make -j 4
     Update QTDIR in setqt
 
