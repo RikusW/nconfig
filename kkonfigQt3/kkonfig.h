@@ -1,3 +1,4 @@
+// vim: sts=4 ts=4 sw=4 cindent
 
 #ifndef KKVIEW_H
 #define KKVIEW_H
@@ -48,7 +49,7 @@ class HelpText : public QTextEdit
 
 public:
     HelpText(QWidget *p,const char *n) : QTextEdit(p,n)
-    { bFileNP=0; iFileStrs=-1; HelpNode=0; };
+    { bFileNP=0; iFileStrs=-1; HelpNode=0; setPaletteBackgroundColor(QColor(150, 150, 150)); };
     void keyPressEvent(QKeyEvent *e);
     void setNodeRoot(NodeRoot **p) { pnr = p; };
 
@@ -92,16 +93,21 @@ public:
 class NodeView : public QListView
 {
 public:
-    NodeView(QWidget *p=0,const char *n=0,WFlags f=0) : QListView(p,n,f)
-    {
-	cgDisabled = palette().active();
-	cgSkipped  = palette().active();
-	cgDisabled.setColor(QColorGroup::Text,palette().disabled().text());
-	cgSkipped .setColor(QColorGroup::Text,QColor(200,0,200));
-    };
-    QColorGroup cgDisabled,cgSkipped;
-};
+	NodeView(QWidget *p=0,const char *n=0,WFlags f=0) : QListView(p,n,f)
+	{
+		QColor bcolor(150, 150, 150);
+		setPaletteBackgroundColor(bcolor);
 
+		cgDisabled = palette().active();
+		cgSkipped  = palette().active();
+		cgDisabled.setColor(QColorGroup::Text, palette().disabled().text());
+		cgSkipped .setColor(QColorGroup::Text, QColor(200,0,200));
+		cgDisabled.setColor(QColorGroup::Background, bcolor);
+		cgSkipped .setColor(QColorGroup::Background, bcolor);
+
+	};
+	QColorGroup cgDisabled,cgSkipped;
+};
 //-----------------------------------------------------------------------------
 
 #endif

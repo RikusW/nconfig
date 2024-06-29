@@ -459,11 +459,9 @@ KKView::KKView( int ac, char **av, QWidget *parent, const char *name )
 
 // TREES & HELP
 	QSplitter *qs = new QSplitter(Qt::Horizontal, this, "Split1");
-	QColor bcolor = QColor(150, 150, 150);
 
 	// folders
 	folders = new NodeView(qs, "Folders1");
-	folders->setPaletteBackgroundColor(bcolor);
 	folders->header()->setClickEnabled( FALSE );
 	folders->addColumn( "Folder" );
 	folders->setSorting(-1, 0);
@@ -475,14 +473,12 @@ KKView::KKView( int ac, char **av, QWidget *parent, const char *name )
 	QSplitter *qs2 = new QSplitter(Qt::Vertical, qs, "Split2");
 	// folders2
 	folders2 = new NodeView(qs2, "Folders2");
-	folders2->setPaletteBackgroundColor(bcolor);
 	folders2->header()->setClickEnabled( FALSE );
 	folders2->addColumn( "Dependencies" );
 	folders2->setSorting(-1, 0);
 
 	// helptext
 	helptext = new HelpText(qs2, "Text1");
-	helptext->setPaletteBackgroundColor(bcolor);
 	helptext->setNodeRoot(&nr);
 	helptext->setTextFormat(Qt::PlainText);
 	helptext->setText("Click on any item to display help.\n");
