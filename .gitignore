@@ -6,6 +6,7 @@
 nconfig/tconfig
 nconfig/nconfig
 gconfig/gconfig
+kkonfigQt3/kkonfig
 kkonfigQt5/kkonfig
 moc_*
 

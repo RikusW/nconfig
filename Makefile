@@ -28,7 +28,7 @@ zconf:
 	    rm -f nodes.o; \
 	fi; \
 
-#	    rm -f kkonfig/Makefile; \
+#	    rm -f kkonfigQt3/Makefile; \
 #-----
 
 nodes.o: $(nodefiles)
@@ -52,12 +52,12 @@ nconfig: nodes.o
 
 #-----
 
-#./kkonfig/Makefile: ./kkonfig/kkonfig.pro
-#	@cd kkonfig; . ./setqt; qmake
+./kkonfigQt3/Makefile: ./kkonfigQt3/kkonfig.pro
+	@cd kkonfigQt3; . ./setqt; qmake
 
-#.PHONY: kkonfig
-#kkonfig: nodes.o kkonfig/Makefile
-#	@. kkonfig/setqt > /dev/null; $(MAKE) -C kkonfig kkonfig
+.PHONY: kkonfig
+kkonfig: nodes.o kkonfigQt3/Makefile
+	@. kkonfigQt3/setqt > /dev/null; $(MAKE) -C kkonfigQt3 kkonfig
 
 #-----
 
@@ -71,9 +71,9 @@ bzfiles =\
  nconfig-0.4/Makefile nconfig-0.4/nodes.h nconfig-0.4/nodes.cpp nconfig-0.4/DOC nconfig-0.4/README\
  nconfig-0.4/TODO nconfig-0.4/kconfig nconfig-0.4/qconf.patch\
  nconfig-0.4/gconfig/Makefile nconfig-0.4/gconfig/gconfig.cpp nconfig-0.4/gconfig/gconfig1.cpp\
- nconfig-0.4/nconfig/Makefile nconfig-0.4/nconfig/nconfig.cpp nconfig-0.4/nconfig/tconfig.cpp
-# nconfig-0.4/kkonfig/kkonfig.pro nconfig-0.4/kkonfig/kkonfig.cpp nconfig-0.4/kkonfig/kkonfig.h\
-# nconfig-0.4/kkonfig/setqt nconfig-0.4/kkonfig/Makefile
+ nconfig-0.4/nconfig/Makefile nconfig-0.4/nconfig/nconfig.cpp nconfig-0.4/nconfig/tconfig.cpp\
+ nconfig-0.4/kkonfigQt3/kkonfig.pro nconfig-0.4/kkonfigQt3/kkonfig.cpp nconfig-0.4/kkonfigQt3/kkonfig.h\
+ nconfig-0.4/kkonfigQt3/setqt nconfig-0.4/kkonfigQt3/Makefile
 
 .PHONY: $(bzfiles)
 
@@ -94,15 +94,14 @@ clean:
 	-rm -f nodes.o
 	$(MAKE) -C nconfig clean
 	$(MAKE) -C gconfig clean
-#. kkonfig/setqt; $(MAKE) -C kkonfig clean
+	. kkonfigQt3/setqt; $(MAKE) -C kkonfigQt3 clean
 
 distclean:
 	-rm -f *~
 	-rm -f .lkc
 	-rm -f nodes.o
 	$(MAKE) -C nconfig distclean
-	#$(MAKE) -C kkonfig distclean
+	$(MAKE) -C kkonfigQt3 distclean
 	$(MAKE) -C gconfig distclean
-
 
 

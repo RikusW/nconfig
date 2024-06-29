@@ -236,7 +236,7 @@ void NodeListItem::okRename(int col)
     // update Node
     char buf[100];
     strcpy(buf,text(0));
-    node->Set((unsigned int)buf);
+    node->Set((uintptr_t)buf);
 
     // Update the help
     listView()->setSelected(this,false);

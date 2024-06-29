@@ -33,9 +33,14 @@ How to make it?
     If kkonfig fail to make set QTDIR, QMAKESPEC and PATH
     to the correct values. (in kkonfig/setqt)
 
-    To make nconfig you need ncurses
-    To make gconfig you need glib-2.0-dev gtk+-2.0-dev and gnomeui-dev
-    To make kkonfig you need qt3 
+    To make nconfig you need ncurses-dev
+    To make gconfig you need glib-2.0-dev gtk+-2.0-dev
+    To make kkonfig you need qt3
+
+    Download Qt3 from https://download.qt.io/archive/qt/3/
+    ./configure -platform linux-g++-64 -shared
+    make -j 4
+    Update QTDIR in setqt
 
 
 How to use it?

@@ -11,9 +11,9 @@ else
 echo ''
 echo 'Setting Qt3 environment'
 echo ''
-export QTDIR=/usr/lib/qt3
-export QMAKESPEC=linux-g++
-export PATH=$PATH:/usr/lib/qt3/bin
+export QTDIR=~/Programming/qt-x11-free-3.3.8b
+export QMAKESPEC=linux-g++-64
+export PATH=$QTDIR/bin:$PATH
 
 fi
 

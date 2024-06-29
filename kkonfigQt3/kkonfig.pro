@@ -23,6 +23,3 @@ exists( ../kconfig/zconf.tab.c ) {
     message("Add a symlink ../kconfig to the 2.6.x kernel first.")
 }
 
-#INCLUDEPATH += /opt/kde3/include
-#LIBS += -L/opt/kde3/lib
-
