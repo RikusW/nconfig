@@ -19,15 +19,22 @@ const char *CopyRight =
 #include "kkonfig.h"
 #include "../nodes.h"
 
-bool bShowFile=false;
-bool bShowSkipped=false,bShowDisabled=false;
+#if 0
+bool bShowFile = false;
+bool bShowSkipped = false;
+bool bShowDisabled = false;
+#else
+bool bShowFile = true;
+bool bShowSkipped = true;
+bool bShowDisabled = true;
+#endif
 
 int main( int argc, char **argv )
 {
 	QApplication a(argc,argv);
 
 	KKView KKView(argc,argv);
-//	KKView.resize( 800, 600 );
+	KKView.resize( 800, 600 );
 //	KKView.setCaption( "Kernel Konfig" );
 //	a.setMainWidget( &KKView );
 	KKView.show();
@@ -193,25 +200,25 @@ QPixmap *IconComment = 0;
 
 //-----------------------------------------------------------------------------
 // NodeListItem
-/*
-NodeListItem::NodeListItem(QListView *p, Node *n)
-	: QListViewItem(p)
+
+NodeListItem::NodeListItem(QTreeWidget *p, Node *n)
+	: QTreeWidgetItem(p)
 {
 	node = n;
 	n->user = this;
-	setText( 0, n->GetPrompt() );
+	setText(0, n->GetPrompt());
 	SetIcon();
 }
 
 NodeListItem::NodeListItem(NodeListItem *parent, NodeListItem *after, Node *n)
-	: QListViewItem( parent , after )
+	: QTreeWidgetItem(parent, after)
 {
 	node = n;
 	n->user = this;
-	setText( 0, n->GetPrompt() );
+	setText(0, n->GetPrompt());
 	SetIcon();
 }
-
+/*
 void NodeListItem::activate()
 {
 	QPoint pt;
@@ -238,25 +245,27 @@ void NodeListItem::okRename(int col)
 	listView()->setSelected(this, false);
 	listView()->setSelected(this, true);
 }
+*/
 
 void NodeListItem::SetIcon()
 {
 	if (node->GetType() & (NTT_INPUT | NTT_DEF)) {
 		switch (node->Get()) {
-		case 1:  setPixmap(0, *IconNo);  break;
-		case 2:  setPixmap(0, *IconMod); break;
-		case 3:  setPixmap(0, *IconYes); break;
-		default: setPixmap(0, *IconStr); break;
+		case 1:  setIcon(0, *IconNo);  break;
+		case 2:  setIcon(0, *IconMod); break;
+		case 3:  setIcon(0, *IconYes); break;
+		default: setIcon(0, *IconStr); break;
 		}
 	} else {
 		switch (node->GetType()) {
 		case NT_ROOT:
-		case NT_MENU:	setPixmap(0, *IconMenu);	break;
-		case NT_CHOICEP: setPixmap(0, *IconChoice);  break;
+		case NT_MENU:    setIcon(0, *IconMenu);    break;
+		case NT_CHOICEP: setIcon(0, *IconChoice);  break;
 		case NT_COMMENT | NTT_PARENT:
-		case NT_COMMENT: setPixmap(0, *IconComment); break;
+		case NT_COMMENT: setIcon(0, *IconComment); break;
 		}
 	}
+/*
 	if (node->GetState() & NS_SKIPPED) {
 		setVisible(bShowSkipped && bShowDisabled);
 	} else {
@@ -266,8 +275,10 @@ void NodeListItem::SetIcon()
 			setVisible(true);
 		}
 	}
+*/
 }
 
+/*
 void NodeListItem::paintCell(QPainter *p, const QColorGroup &cg, int c, int w, int a)
 {
 	NodeView *nv = (NodeView*)listView();
@@ -399,14 +410,8 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	IconChoice = new QPixmap(xpm_choice);
 	IconComment = new QPixmap(xpm_comment);
 
-	QWidget *widget = new QWidget;
-	QVBoxLayout *layout = new QVBoxLayout;
-	setCentralWidget(widget);
-	widget->setLayout(layout);
-
 	setWindowTitle("Kernel Konfig");
 	setMinimumSize(160, 160);
-	resize(800, 600);
 
 // MENUS
 	QMenu *mfile = menuBar()->addMenu("&File");
@@ -439,26 +444,30 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	mhelp->addAction("About &Qt", this, SLOT(helpAboutQt()));
 
 // TREES & HELP
-	QSplitter *qs = new QSplitter(Qt::Horizontal, widget);
-/*
+	QSplitter *qs = new QSplitter(Qt::Horizontal, this);
+	setCentralWidget(qs);
+
 	// folders
-	folders = new NodeView(qs,"Folders1");
-	folders->header()->setClickEnabled( FALSE );
-	folders->addColumn( "Folder" );
-	folders->setSorting(-1,0);
+	folders = new QTreeWidget(qs);
+//	folders->setColumnCount(1);
+//	folders->header()->setClickEnabled(FALSE);
+//	folders->addColumn("Folder");
+//	folders->setSorting(-1,0);
 	// ---- fill tree here ----
-	initFolders(0,0,ac,av);
-	folders->setRootIsDecorated( TRUE );
-	qs->setResizeMode( folders, QSplitter::KeepSize );
+	initFolders(0, 0, ac, av);
+//	folders->setRootIsDecorated( TRUE );
+//	qs->setResizeMode( folders, QSplitter::KeepSize );
 
-	QSplitter *qs2 = new QSplitter(Qt::Vertical,qs,"Split2");
 	// folders2
-	folders2 = new NodeView(qs2,"Folders2");
-	folders2->header()->setClickEnabled( FALSE );
-	folders2->addColumn( "Dependencies" );
-	folders2->setSorting(-1,0);
-
+	QSplitter *qs2 = new QSplitter(Qt::Vertical, qs);
+	folders2 = new QTreeWidget(qs2);
+//	folders2->setColumnCount(1);
+//	folders2->header()->setClickEnabled(FALSE);
+//	folders2->addColumn("Dependencies");
+//	folders2->setSorting(-1,0);
 	// helptext
+	helptext = new QTextEdit(qs2);
+/*
 	helptext = new HelpText(qs2,"Text1");
 	helptext->setNodeRoot(&nr);
 	helptext->setTextFormat(Qt::PlainText);
@@ -504,7 +513,7 @@ void KKView::closeEvent(QCloseEvent *e)
 */
 //-----------------------------------------------------------------------------
 // init tree
-/*
+
 // hack to get the ordering RIGHT, because
 // qt -insert- children thus reversing EVERYTHING.........
 struct RW_UserData
@@ -544,10 +553,11 @@ bool enumFunc(Node *n, int flags, void *pv)
 			if (!n->GetParent(NT_ROOT)) {
 				break; // don't open in deptree
 			}
-def:	default:
-			li->setOpen(true);
+def:	default: {}
+//			li->setOpen(true);
 		}
-		RW_UserData rwd; rwd.parent=li; rwd.last=0;
+		RW_UserData rwd; rwd.parent=li;
+		rwd.last=0;
 		n->Enumerate(enumFunc, NS_T_ALL, &rwd);
 	}
 	return 1;
@@ -557,18 +567,23 @@ void KKView::initFolders(const char *arch, const char *path, int ac, char **av)
 {
 	NodeRoot *nnr = new NodeRoot();
 
-	int ret;
+	if (!nnr->Init("i386", "../../kernels/linux-2.2.0")) { //debug testing
+		goto done;
+	}
+	delete nnr;
+/*	int ret;
 	if (ac & !nr) { // initial init ?
 		if (!(ret = nnr->Init_CmdLine(ac, av) & 7)) {
 			goto done;
 		}
-		nr=nnr;
+		nr = nnr;
 	} else {
 		if (!(ret = nnr->Init(arch, path) & 7)) {
 			goto done;
 		}
-			delete nnr;
-	}
+		delete nnr;
+	}*/
+	/*
 	switch (ret) {
 		case 1:
 			fileMenu(mFileSetPath);
@@ -586,16 +601,17 @@ void KKView::initFolders(const char *arch, const char *path, int ac, char **av)
 		case 4:
 			break; // silent fail
 	}
+	*/
 	printf("init fail...\n");
 	return;
 done:
 
-	if (nr) {
-		delete nr;
-	}
+//	if (nr) {
+//		delete nr;
+//	}
 	nr = nnr;
 	folders->clear();
-
+/*
 fillarch:
 	QPopupMenu *pm = (QPopupMenu*)child("ArchMenu");	// fill the arch menu
 	if (!pm) {
@@ -617,15 +633,15 @@ fillarch:
 		return; // fill only the arch menu
 	}
 	nr->GetSymbols()->Ntfy = NotifyFunc; 		// set notifications
-
+*/
 	NodeListItem *li = new NodeListItem(folders, nr);	// add the root
 	RW_UserData rwd;
 	rwd.parent = li;
 	rwd.last = 0;
 	nr->Enumerate(enumFunc, NS_T_ALL, &rwd);		// and the rest
-	li->setOpen(true);
+//	li->setOpen(true);
 }
-*/
+
 //-----------------------------------------------------------------------------
 // class HelpText
 // forward & back

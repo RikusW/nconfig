@@ -10,10 +10,11 @@ TEMPLATE = app
 # Input
 #TODO fix these later
 QMAKE_CXXFLAGS += -Wno-unused-parameter -Wno-write-strings -Wno-implicit-fallthrough -Wno-unused-result
+QMAKE_CXXFLAGS += -g -Og
 HEADERS += kkonfig.h ../nodes.h
 SOURCES += kkonfig.cpp ../nodes.cpp
 CONFIG += qt x11 release
-QT += widgets
+QT += widgets gui
 
 exists( ../kconfig/zconf.tab.c ) {
     message("Enabling Kernel 2.6.x support for kkonfig.")

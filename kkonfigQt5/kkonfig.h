@@ -3,12 +3,12 @@
 #ifndef KKVIEW_H
 #define KKVIEW_H
 
-#include <qtextedit.h>
 #include <qstring.h>
 #include <qobject.h>
-#include <qlistview.h>
-#include <QVBoxLayout>
 #include <QMainWindow>
+#include <QTextEdit>
+#include <QTreeView>
+#include <QTreeWidgetItem>
 
 class Node;
 class NodeRoot;
@@ -51,12 +51,11 @@ private slots:
 	void helpAbout();
 	void helpAboutQt();
 
-
-
 protected:
-//    NodeRoot *nr;
-//    HelpText *helptext;
-//    QListView *folders,*folders2;
+	NodeRoot *nr;
+//	HelpText *helptext;
+	QTextEdit *helptext;
+	QTreeWidget *folders,*folders2;
 };
 
 //-----------------------------------------------------------------------------
@@ -90,33 +89,40 @@ public slots:
     void ShowFile(char *,int);
     void ShowHelp( QListViewItem* );
 };
+*/
 
 //-----------------------------------------------------------------------------
 
-class NodeListItem : public QListViewItem
+class NodeListItem : public QTreeWidgetItem
 {
 public:
-    NodeListItem( QListView *p, Node *n);
-    NodeListItem( NodeListItem *parent,NodeListItem *after, Node *n );
+	NodeListItem( QTreeWidget *p, Node *n);
+	NodeListItem( NodeListItem *parent, NodeListItem *after, Node *n );
 
     // non Qt
-    Node *node;
-    void SetIcon();
+	Node *node;
+	void SetIcon();
 
-    void activate();
-    void okRename(int col);
-    void paintCell(QPainter *p,const QColorGroup &cg,int c,int w,int a);
+//    void activate();
+//    void okRename(int col);
+//    void paintCell(QPainter *p, const QColorGroup &cg, int c, int w, int a);
 };
 
+/*
 class NodeView : public QListView
 {
 public:
     NodeView(QWidget *p=0,const char *n=0,WFlags f=0) : QListView(p,n,f)
     {
-	cgDisabled = palette().active();
-	cgSkipped  = palette().active();
-	cgDisabled.setColor(QColorGroup::Text,palette().disabled().text());
-	cgSkipped .setColor(QColorGroup::Text,QColor(200,0,200));
+		QColor bcolor(150, 150, 150);
+		setPaletteBackgroundColor(bcolor);
+
+		cgDisabled = palette().active();
+		cgSkipped  = palette().active();
+		cgDisabled.setColor(QColorGroup::Text, palette().disabled().text());
+		cgSkipped .setColor(QColorGroup::Text, QColor(200, 0, 200));
+		cgDisabled.setColor(QColorGroup::Background, bcolor);
+		cgSkipped .setColor(QColorGroup::Background, bcolor);
     };
     QColorGroup cgDisabled,cgSkipped;
 };

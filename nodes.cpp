@@ -2478,6 +2478,7 @@ int NodeRoot::Init(const char *Arch, const char *Path, const char *ConfigFile, b
 	ns->bPromptSpaces = bSpc; // XXX REMOVE THIS line
 	if (!ns->SetPath(Path)) {
 		printf("The specified directory doesn't contain the kernel sources.\n");
+		puts(Path);
 		return 1;
 	}
 
