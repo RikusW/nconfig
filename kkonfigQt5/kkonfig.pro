@@ -8,6 +8,8 @@
 TEMPLATE = app
 
 # Input
+#TODO fix these later
+QMAKE_CXXFLAGS += -Wno-unused-parameter -Wno-write-strings -Wno-implicit-fallthrough -Wno-unused-result
 HEADERS += kkonfig.h ../nodes.h
 SOURCES += kkonfig.cpp ../nodes.cpp
 CONFIG += qt x11 release
