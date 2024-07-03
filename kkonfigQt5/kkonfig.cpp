@@ -24,15 +24,15 @@ bool bShowSkipped=false,bShowDisabled=false;
 
 int main( int argc, char **argv )
 {
-    QApplication a(argc,argv);
+	QApplication a(argc,argv);
 
-    KKView KKView(argc,argv);
-//    KKView.resize( 800, 600 );
-//    KKView.setCaption( "Kernel Konfig" );
-//    a.setMainWidget( &KKView );
-    KKView.show();
+	KKView KKView(argc,argv);
+//	KKView.resize( 800, 600 );
+//	KKView.setCaption( "Kernel Konfig" );
+//	a.setMainWidget( &KKView );
+	KKView.show();
 
-    return a.exec();
+	return a.exec();
 }
 
 static const char *xpm_no[]={
@@ -193,7 +193,7 @@ QPixmap *IconComment = 0;
 
 //-----------------------------------------------------------------------------
 // NodeListItem
-/*  
+/*
 NodeListItem::NodeListItem(QListView *p, Node *n)
 	: QListViewItem(p)
 {
@@ -251,7 +251,7 @@ void NodeListItem::SetIcon()
 	} else {
 		switch (node->GetType()) {
 		case NT_ROOT:
-		case NT_MENU:    setPixmap(0, *IconMenu);    break;
+		case NT_MENU:	setPixmap(0, *IconMenu);	break;
 		case NT_CHOICEP: setPixmap(0, *IconChoice);  break;
 		case NT_COMMENT | NTT_PARENT:
 		case NT_COMMENT: setPixmap(0, *IconComment); break;
@@ -356,130 +356,130 @@ bool NotifyFunc(Node *n, int flags, void *pv)
 
 enum
 {
-    mFileLoad = 1,
-    mFileSave,
-    mFileClear,
-    mFileSetPath,
-    mFileOpen,
-    mFileSaveAs,
+	mFileLoad = 1,
+	mFileSave,
+	mFileClear,
+	mFileSetPath,
+	mFileOpen,
+	mFileSaveAs,
 
-    mViewDisabled,
-    mViewSkipped,
-    mViewHorizontal,
-    mViewDependencies,
-    mViewHelpFile,
+	mViewDisabled,
+	mViewSkipped,
+	mViewHorizontal,
+	mViewDependencies,
+	mViewHelpFile,
 
-    mHelpSearch,
-    mHelpAbout,
-    mHelpAboutQt,
+	mHelpSearch,
+	mHelpAbout,
+	mHelpAboutQt,
 };
 
 KKView::~KKView()
 {
-//    delete nr;
-    
-    delete IconNo;
-    delete IconMod;
-    delete IconYes;
-    delete IconStr;
-    delete IconMenu;
-    delete IconChoice;
-    delete IconComment;
+//	delete nr;
+
+	delete IconNo;
+	delete IconMod;
+	delete IconYes;
+	delete IconStr;
+	delete IconMenu;
+	delete IconChoice;
+	delete IconComment;
 }
-    
+
 KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 {
-//    nr=0;
-    
-    IconNo  = new QPixmap(xpm_no);
-    IconMod = new QPixmap(xpm_mod);
-    IconYes = new QPixmap(xpm_yes);
-    IconStr = new QPixmap(xpm_str);
-    IconMenu = new QPixmap(xpm_menu);
-    IconChoice = new QPixmap(xpm_choice);
-    IconComment = new QPixmap(xpm_comment);
-    
-    QWidget *widget = new QWidget;
-    QVBoxLayout *layout = new QVBoxLayout;
-    setCentralWidget(widget);
-    widget->setLayout(layout);
+//	nr=0;
 
-    setWindowTitle("Kernel Konfig");
-    setMinimumSize(160, 160);
-    resize(800, 600);
+	IconNo  = new QPixmap(xpm_no);
+	IconMod = new QPixmap(xpm_mod);
+	IconYes = new QPixmap(xpm_yes);
+	IconStr = new QPixmap(xpm_str);
+	IconMenu = new QPixmap(xpm_menu);
+	IconChoice = new QPixmap(xpm_choice);
+	IconComment = new QPixmap(xpm_comment);
+
+	QWidget *widget = new QWidget;
+	QVBoxLayout *layout = new QVBoxLayout;
+	setCentralWidget(widget);
+	widget->setLayout(layout);
+
+	setWindowTitle("Kernel Konfig");
+	setMinimumSize(160, 160);
+	resize(800, 600);
 
 // MENUS
-    QMenu *mfile = menuBar()->addMenu("&File");
-    mfile->addAction("&Load",     this, SLOT(fileLoad())); //, CTRL + Key_L)
-    mfile->addAction("&Save",     this, SLOT(fileSave())); //, CTRL + Key_S)
-    mfile->addAction("&Clear",    this, SLOT(fileClear())); //
-    mfile->addAction("Set &Path", this, SLOT(filePath())); //
-    mfile->addSeparator();
-    mfile->addAction("&Open",     this, SLOT(fileOpen())); //, CTRL + Key_O)
-    mfile->addAction("Save &as",  this, SLOT(fileSaveAs())); //, CTRL + Key_A)
-    mfile->addSeparator();
-    mfile->addAction("E&xit",     this, SLOT(close()));
+	QMenu *mfile = menuBar()->addMenu("&File");
+	mfile->addAction("&Load",	 this, SLOT(fileLoad())); //, CTRL + Key_L)
+	mfile->addAction("&Save",	 this, SLOT(fileSave())); //, CTRL + Key_S)
+	mfile->addAction("&Clear",	this, SLOT(fileClear())); //
+	mfile->addAction("Set &Path", this, SLOT(filePath())); //
+	mfile->addSeparator();
+	mfile->addAction("&Open",	 this, SLOT(fileOpen())); //, CTRL + Key_O)
+	mfile->addAction("Save &as",  this, SLOT(fileSaveAs())); //, CTRL + Key_A)
+	mfile->addSeparator();
+	mfile->addAction("E&xit",	 this, SLOT(close()));
 
-    QMenu *mview = menuBar()->addMenu("&View");
-//    mview->setCheckable(true);
-    mview->addAction("&Disabled",    this, SLOT(viewDisabled())); //, CTRL + Key_D)bShowDisabled -> checked ?
-    mview->addAction("&Skipped",     this, SLOT(viewSkipped()) ); //, CTRL + Key_K)bShowSkipped
-    mview->addAction("&Horizontal",  this, SLOT(viewHorizontal()));
-    mview->addSeparator();
-    mview->addAction("De&pendencies",this, SLOT(viewDependencies())); //, CTRL + Key_P)true
-    mview->addAction("&Help/File",   this, SLOT(viewHelpFile())); //, CTRL + Key_H)bShowFile
+	QMenu *mview = menuBar()->addMenu("&View");
+//	mview->setCheckable(true);
+	mview->addAction("&Disabled",	this, SLOT(viewDisabled())); //, CTRL + Key_D)bShowDisabled -> checked ?
+	mview->addAction("&Skipped",	 this, SLOT(viewSkipped()) ); //, CTRL + Key_K)bShowSkipped
+	mview->addAction("&Horizontal",  this, SLOT(viewHorizontal()));
+	mview->addSeparator();
+	mview->addAction("De&pendencies",this, SLOT(viewDependencies())); //, CTRL + Key_P)true
+	mview->addAction("&Help/File",   this, SLOT(viewHelpFile())); //, CTRL + Key_H)bShowFile
 
-    QMenu *march = menuBar()->addMenu("&Arch");
-    march->addAction("i386");
-    connect(march, SIGNAL(triggered(QAction*)), this, SLOT(archMenu(QAction*)));
+	QMenu *march = menuBar()->addMenu("&Arch");
+	march->addAction("i386");
+	connect(march, SIGNAL(triggered(QAction*)), this, SLOT(archMenu(QAction*)));
 
-    QMenu *mhelp = menuBar()->addMenu("&Help");
-    mhelp->addAction("&Search",   this, SLOT(helpSearch())); //, CTRL + Key_F
-    mhelp->addAction("&About",    this, SLOT(helpAbout()));
-    mhelp->addAction("About &Qt", this, SLOT(helpAboutQt()));
+	QMenu *mhelp = menuBar()->addMenu("&Help");
+	mhelp->addAction("&Search",   this, SLOT(helpSearch())); //, CTRL + Key_F
+	mhelp->addAction("&About",	this, SLOT(helpAbout()));
+	mhelp->addAction("About &Qt", this, SLOT(helpAboutQt()));
 
 // TREES & HELP
-    QSplitter *qs = new QSplitter(Qt::Horizontal, widget);
-/*  
-    // folders
-    folders = new NodeView(qs,"Folders1");
-    folders->header()->setClickEnabled( FALSE );
-    folders->addColumn( "Folder" );
-    folders->setSorting(-1,0);
-    // ---- fill tree here ----
-    initFolders(0,0,ac,av);
-    folders->setRootIsDecorated( TRUE );
-    qs->setResizeMode( folders, QSplitter::KeepSize );
+	QSplitter *qs = new QSplitter(Qt::Horizontal, widget);
+/*
+	// folders
+	folders = new NodeView(qs,"Folders1");
+	folders->header()->setClickEnabled( FALSE );
+	folders->addColumn( "Folder" );
+	folders->setSorting(-1,0);
+	// ---- fill tree here ----
+	initFolders(0,0,ac,av);
+	folders->setRootIsDecorated( TRUE );
+	qs->setResizeMode( folders, QSplitter::KeepSize );
 
-    QSplitter *qs2 = new QSplitter(Qt::Vertical,qs,"Split2");
-    // folders2
-    folders2 = new NodeView(qs2,"Folders2");
-    folders2->header()->setClickEnabled( FALSE );
-    folders2->addColumn( "Dependencies" );
-    folders2->setSorting(-1,0);
-    
-    // helptext
-    helptext = new HelpText(qs2,"Text1");
-    helptext->setNodeRoot(&nr);
-    helptext->setTextFormat(Qt::PlainText);
-    helptext->setText("Click on any item to display help.\n");
-    helptext->setWordWrap(QTextEdit::NoWrap);
-    //helptext->setReadOnly(true);
+	QSplitter *qs2 = new QSplitter(Qt::Vertical,qs,"Split2");
+	// folders2
+	folders2 = new NodeView(qs2,"Folders2");
+	folders2->header()->setClickEnabled( FALSE );
+	folders2->addColumn( "Dependencies" );
+	folders2->setSorting(-1,0);
 
-    connect(folders,SIGNAL(selectionChanged(QListViewItem*)),
-	    this,SLOT(ShowDeps(QListViewItem*)));
+	// helptext
+	helptext = new HelpText(qs2,"Text1");
+	helptext->setNodeRoot(&nr);
+	helptext->setTextFormat(Qt::PlainText);
+	helptext->setText("Click on any item to display help.\n");
+	helptext->setWordWrap(QTextEdit::NoWrap);
+	//helptext->setReadOnly(true);
 
-    connect(folders2,SIGNAL(selectionChanged(QListViewItem*)),
-	    helptext,SLOT(ShowHelp(QListViewItem*)));
-    
-    connect(helptext,SIGNAL(cursorPositionChanged(int,int)),
-	    helptext,SLOT(linkTo(int,int)));
+	connect(folders,SIGNAL(selectionChanged(QListViewItem*)),
+		this,SLOT(ShowDeps(QListViewItem*)));
 
-    QValueList<int> lst2; lst2.append(130); lst2.append(470);
-    qs2->setSizes(lst2);
+	connect(folders2,SIGNAL(selectionChanged(QListViewItem*)),
+		helptext,SLOT(ShowHelp(QListViewItem*)));
 
-    QValueList<int> lst; lst.append(350); lst.append(440);
-    qs->setSizes( lst );*/
+	connect(helptext,SIGNAL(cursorPositionChanged(int,int)),
+		helptext,SLOT(linkTo(int,int)));
+
+	QValueList<int> lst2; lst2.append(130); lst2.append(470);
+	qs2->setSizes(lst2);
+
+	QValueList<int> lst; lst.append(350); lst.append(440);
+	qs->setSizes( lst );*/
 }
 /*
 void KKView::closeEvent(QCloseEvent *e)
