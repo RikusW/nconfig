@@ -108,25 +108,6 @@ public:
 //	void paintCell(QPainter *p, const QColorGroup &cg, int c, int w, int a);
 };
 
-/*
-class NodeView : public QListView
-{
-public:
-	NodeView(QWidget *p=0,const char *n=0,WFlags f=0) : QListView(p,n,f)
-	{
-		QColor bcolor(150, 150, 150);
-		setPaletteBackgroundColor(bcolor);
-
-		cgDisabled = palette().active();
-		cgSkipped  = palette().active();
-		cgDisabled.setColor(QColorGroup::Text, palette().disabled().text());
-		cgSkipped .setColor(QColorGroup::Text, QColor(200, 0, 200));
-		cgDisabled.setColor(QColorGroup::Background, bcolor);
-		cgSkipped .setColor(QColorGroup::Background, bcolor);
-	};
-	QColorGroup cgDisabled,cgSkipped;
-};
-*/
 //-----------------------------------------------------------------------------
 
 #endif

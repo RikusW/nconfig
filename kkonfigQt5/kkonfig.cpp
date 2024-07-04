@@ -29,6 +29,10 @@ bool bShowSkipped = true;
 bool bShowDisabled = true;
 #endif
 
+//QColorGroup cgDisabled,cgSkipped;
+QBrush brDisabled = QBrush(QColor(100, 100, 100)); //TODO use disabled
+QBrush brSkipped = QBrush(QColor(200, 100, 200));
+
 int main( int argc, char **argv )
 {
 	QApplication a(argc,argv);
@@ -265,17 +269,19 @@ void NodeListItem::SetIcon()
 		case NT_COMMENT: setIcon(0, *IconComment); break;
 		}
 	}
-/*
+
 	if (node->GetState() & NS_SKIPPED) {
-		setVisible(bShowSkipped && bShowDisabled);
+		setHidden(!(bShowSkipped && bShowDisabled));
+		setForeground(0, brSkipped);
 	} else {
 		if (node->GetState() & NS_DISABLED) {
-			setVisible(bShowDisabled);
+			setHidden(!bShowDisabled);
+			setForeground(0, brDisabled);
 		} else {
-			setVisible(true);
+			setHidden(false);
 		}
 	}
-*/
+
 }
 
 /*
@@ -302,10 +308,10 @@ bool UpdateFunc(Node *n, int flags, void *pv)
 	pv=pv; //compiler shutup
 
 	if (flags & NS_SKIPPED) {
-		li->setVisible(bShowSkipped && bShowDisabled);
+		li->setHidden(!(bShowSkipped && bShowDisabled));
 	} else {
 		if (flags & NS_DISABLED) {
-			li->setVisible(bShowDisabled);
+			li->setHidden(!bShowDisabled);
 		}
 	}
 	return 1;
@@ -340,10 +346,10 @@ bool NotifyFunc(Node *n, int flags, void *pv)
 	//case NS_ENABLE: break;
 	//case NS_DISABLE: break;
 	case NS_EXPAND:
-		li->setOpen(true);
+		li->setExpanded(true);
 		return 1;
 	case NS_COLLAPSE:
-		li->setOpen(false);
+		li->setExpanded(false);
 		return 1;
 	case NS_PROMPT:
 		li->setText(0, n->GetPrompt());
@@ -351,7 +357,7 @@ bool NotifyFunc(Node *n, int flags, void *pv)
 	case NS_SELECT:	{
 		QListViewItem *qi = li;
 		while((qi = qi->parent())) {
-			qi->setOpen(true);
+			qi->setExpanded(true);
 		}
 		li->listView()->setSelected(li, 1);
 		li->listView()->ensureItemVisible(li);
@@ -554,7 +560,7 @@ bool enumFunc(Node *n, int flags, void *pv)
 				break; // don't open in deptree
 			}
 def:	default: {}
-//			li->setOpen(true);
+			li->setExpanded(true);
 		}
 		RW_UserData rwd; rwd.parent=li;
 		rwd.last=0;
@@ -639,7 +645,7 @@ fillarch:
 	rwd.parent = li;
 	rwd.last = 0;
 	nr->Enumerate(enumFunc, NS_T_ALL, &rwd);		// and the rest
-//	li->setOpen(true);
+	li->setExpanded(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -772,7 +778,7 @@ void KKView::ShowDeps( QListViewItem *li )
 	rwd.parent = l;
 	rwd.last = 0;
 	nd->Enumerate(enumFunc, NS_T_ALL, &rwd);		// and the rest
-	l->setOpen(true);
+	l->setExpanded(true);
 	nd->Update(1);
 
 	helptext->ShowHelp(li);
