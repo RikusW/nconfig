@@ -219,23 +219,29 @@ NodeListItem::NodeListItem(NodeListItem *parent, NodeListItem *after, Node *n)
 	setText(0, n->GetPrompt());
 	SetIcon();
 }
-/*
+
 void NodeListItem::activate()
 {
 	QPoint pt;
-	if (!activatedPos(pt) || QRect(0, 0, height(), height()).contains(pt)) {
+//	if (!activatedPos(pt) || QRect(0, 0, height(), height()).contains(pt)) {
 		if (node->GetType() & NTT_STR) {
-			setRenameEnabled(0, true);
-			startRename(0);
+//			setRenameEnabled(0, true);
+//			startRename(0);
 		} else {
 			node->Advance();
 		}
-	}
+//	}
 }
 
+void KKView::itemActivated(QTreeWidgetItem *item, int column)
+{
+	((NodeListItem*)item)->activate();
+}
+
+/*
 void NodeListItem::okRename(int col)
 {
-	QListViewItem::okRename(col);
+	QTreeWidgetItem::okRename(col);
 
 	// update Node
 	char buf[100];
@@ -293,8 +299,9 @@ void NodeListItem::paintCell(QPainter *p, const QColorGroup &cg, int c, int w, i
 			pcg = &nv->cgDisabled;
 		}
 	}
-	QListViewItem::paintCell(p, *pcg, c, w, a);
+	QTreeWidgetItem::paintCell(p, *pcg, c, w, a);
 }
+*/
 
 bool UpdateFunc(Node *n, int flags, void *pv)
 {
@@ -302,13 +309,15 @@ bool UpdateFunc(Node *n, int flags, void *pv)
 		return 1;
 	}
 	NodeListItem *li = (NodeListItem*)n->user;
-	pv=pv; //compiler shutup
+	pv = pv; //compiler shutup
 
 	if (flags & NS_SKIPPED) {
 		li->setHidden(!(bShowSkipped && bShowDisabled));
+		li->setForeground(0, brSkipped);
 	} else {
 		if (flags & NS_DISABLED) {
 			li->setHidden(!bShowDisabled);
+			li->setForeground(0, brDisabled);
 		}
 	}
 	return 1;
@@ -352,19 +361,20 @@ bool NotifyFunc(Node *n, int flags, void *pv)
 		li->setText(0, n->GetPrompt());
 		return 1;
 	case NS_SELECT:	{
-		QListViewItem *qi = li;
+		QTreeWidgetItem *qi = li;
 		while((qi = qi->parent())) {
 			qi->setExpanded(true);
 		}
-		li->listView()->setSelected(li, 1);
-		li->listView()->ensureItemVisible(li);
+		li->treeWidget()->setCurrentItem(li);
+		//setSelected(li, 1); Qt3
+//		li->treeWidget()->ensureItemVisible(li);
 		return 1;
 		}
 	}
 	li->SetIcon();
 	return 1;
 }
-*/
+
 //-----------------------------------------------------------------------------
 // init app
 
@@ -475,10 +485,16 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	//helptext->setReadOnly(true);
 */
 	connect(folders, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
-							this, SLOT(ShowDeps(QTreeWidgetItem*)));
+				this,  SLOT(ShowDeps(QTreeWidgetItem*)));
+
+	connect(folders,  SIGNAL(itemActivated(QTreeWidgetItem*, int)),
+				this,   SLOT(itemActivated(QTreeWidgetItem*, int)));
+	connect(folders2, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
+				this,   SLOT(itemActivated(QTreeWidgetItem*, int)));
+
 /*
-	connect(folders2,SIGNAL(selectionChanged(QListViewItem*)),
-		helptext,SLOT(ShowHelp(QListViewItem*)));
+	connect(folders2, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+							helptext, SLOT(ShowHelp(QTreeWidgetItem*)));
 
 	connect(helptext,SIGNAL(cursorPositionChanged(int,int)),
 		helptext,SLOT(linkTo(int,int)));
@@ -561,7 +577,7 @@ void KKView::initFolders(const char *arch, const char *path, int ac, char **av)
 {
 	NodeRoot *nnr = new NodeRoot();
 
-	if (!nnr->Init("i386", "../../kernels/linux-2.2.0")) { //debug testing
+	if (!nnr->Init("i386", "../../kernels/linux-2.6.0")) { //debug testing
 		goto done;
 	}
 	delete nnr;
@@ -626,8 +642,9 @@ fillarch:
 	if (ret) {
 		return; // fill only the arch menu
 	}
-	nr->GetSymbols()->Ntfy = NotifyFunc; 		// set notifications
 */
+	nr->SetNotify(NotifyFunc); 		// set notifications
+
 	NodeListItem *li = new NodeListItem(folders, nr);	// add the root
 	RW_UserData rwd;
 	rwd.parent = li;
@@ -707,7 +724,7 @@ void HelpText::FilePrev(int i)
 			bFileNP = 1;
 			bool t = bShowFile;
 			bShowFile = 0;
-			ShowHelp((QListViewItem*)HelpNode->user);
+			ShowHelp((QTreeWidgetItem*)HelpNode->user);
 			bShowFile = t;
 		}
 	}
@@ -773,7 +790,7 @@ void KKView::ShowDeps( QTreeWidgetItem *li )
 //	helptext->ShowHelp(li);
 }
 /*
-void HelpText::ShowHelp( QListViewItem *li )
+void HelpText::ShowHelp(QTreeWidgetItem *li)
 {
 	if (!li) {
 		return;
@@ -926,14 +943,14 @@ void KKView::viewDisabled()
 //	bShowDisabled = !bShowDisabled;
 //	pm->setItemChecked(mViewDisabled,bShowDisabled);
 //	pm->setItemChecked(mViewSkipped,bShowSkipped && bShowDisabled);
-//	nr->Enumerate(UpdateFunc,NS_ALL,0);
+//	nr->Enumerate(UpdateFunc, NS_ALL, 0);
 }
 
 void KKView::viewSkipped()
 {
 //	bShowSkipped=!bShowSkipped;
 //	pm->setItemChecked(mViewSkipped,bShowSkipped && bShowDisabled);
-//	nr->Enumerate(UpdateFunc,NS_ALL,0);
+//	nr->Enumerate(UpdateFunc, NS_ALL, 0);
 }
 
 void KKView::viewHorizontal()
