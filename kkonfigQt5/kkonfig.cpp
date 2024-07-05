@@ -38,9 +38,6 @@ int main( int argc, char **argv )
 	QApplication a(argc,argv);
 
 	KKView KKView(argc,argv);
-	KKView.resize( 800, 600 );
-//	KKView.setCaption( "Kernel Konfig" );
-//	a.setMainWidget( &KKView );
 	KKView.show();
 
 	return a.exec();
@@ -418,6 +415,7 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 
 	setWindowTitle("Kernel Konfig");
 	setMinimumSize(160, 160);
+	resize( 1200, 800 );
 
 // MENUS
 	QMenu *mfile = menuBar()->addMenu("&File");
@@ -451,28 +449,23 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 
 // TREES & HELP
 	QSplitter *qs = new QSplitter(Qt::Horizontal, this);
-	setCentralWidget(qs);
-
-	// folders
 	folders = new QTreeWidget(qs);
-//	folders->setColumnCount(1);
-//	folders->header()->setClickEnabled(FALSE);
-//	folders->addColumn("Folder");
-//	folders->setSorting(-1,0);
+	QSplitter *qs2 = new QSplitter(Qt::Vertical, qs);
+	folders2 = new QTreeWidget(qs2);
+	helptext = new QTextEdit(qs2);
+
+	setCentralWidget(qs);
+	qs->setStretchFactor(0, 40);
+	qs->setStretchFactor(1, 60);
+	qs2->setStretchFactor(0, 30);
+	qs2->setStretchFactor(1, 70);
+	folders->headerItem()->setHidden(true);
+	folders2->headerItem()->setHidden(true);
+
 	// ---- fill tree here ----
 	initFolders(0, 0, ac, av);
 //	folders->setRootIsDecorated( TRUE );
-//	qs->setResizeMode( folders, QSplitter::KeepSize );
 
-	// folders2
-	QSplitter *qs2 = new QSplitter(Qt::Vertical, qs);
-	folders2 = new QTreeWidget(qs2);
-//	folders2->setColumnCount(1);
-//	folders2->header()->setClickEnabled(FALSE);
-//	folders2->addColumn("Dependencies");
-//	folders2->setSorting(-1,0);
-	// helptext
-	helptext = new QTextEdit(qs2);
 /*
 	helptext = new HelpText(qs2,"Text1");
 	helptext->setNodeRoot(&nr);
@@ -480,21 +473,16 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	helptext->setText("Click on any item to display help.\n");
 	helptext->setWordWrap(QTextEdit::NoWrap);
 	//helptext->setReadOnly(true);
-
-	connect(folders,SIGNAL(selectionChanged(QListViewItem*)),
-		this,SLOT(ShowDeps(QListViewItem*)));
-
+*/
+	connect(folders, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+							this, SLOT(ShowDeps(QTreeWidgetItem*)));
+/*
 	connect(folders2,SIGNAL(selectionChanged(QListViewItem*)),
 		helptext,SLOT(ShowHelp(QListViewItem*)));
 
 	connect(helptext,SIGNAL(cursorPositionChanged(int,int)),
 		helptext,SLOT(linkTo(int,int)));
-
-	QValueList<int> lst2; lst2.append(130); lst2.append(470);
-	qs2->setSizes(lst2);
-
-	QValueList<int> lst; lst.append(350); lst.append(440);
-	qs->setSizes( lst );*/
+*/
 }
 /*
 void KKView::closeEvent(QCloseEvent *e)
@@ -751,10 +739,10 @@ void HelpText::keyPressEvent(QKeyEvent *e)
 */
 //-----------------------------------------------------------------------------
 // help handling
-/*
+
 NodeListItem *OldN = 0;
 
-void KKView::ShowDeps( QListViewItem *li )
+void KKView::ShowDeps( QTreeWidgetItem *li )
 {
 	if (!li) {
 		return;
@@ -774,6 +762,7 @@ void KKView::ShowDeps( QListViewItem *li )
 		return;
 	}
 	NodeListItem *l = new NodeListItem(folders2, nd);	// add the root
+	l->setText(0, "Dependencies");
 	RW_UserData rwd;
 	rwd.parent = l;
 	rwd.last = 0;
@@ -781,9 +770,9 @@ void KKView::ShowDeps( QListViewItem *li )
 	l->setExpanded(true);
 	nd->Update(1);
 
-	helptext->ShowHelp(li);
+//	helptext->ShowHelp(li);
 }
-
+/*
 void HelpText::ShowHelp( QListViewItem *li )
 {
 	if (!li) {

@@ -29,7 +29,7 @@ protected:
 
 public slots:
 //	void Search(int id);
-//	void ShowDeps( QListViewItem* );
+	void ShowDeps(QTreeWidgetItem*);
 //	void closeEvent(QCloseEvent *e);
 
 private slots:
