@@ -176,22 +176,6 @@ void NodeListItem::SetIcon()
 
 }
 
-/*
-void NodeListItem::paintCell(QPainter *p, const QColorGroup &cg, int c, int w, int a)
-{
-	NodeView *nv = (NodeView*)listView();
-	const QColorGroup *pcg = &cg;
-	if (node->GetState() & NS_SKIPPED) {
-		pcg = &nv->cgSkipped; // override disabled
-	} else {
-		if (node->GetState() & NS_DISABLED) {
-			pcg = &nv->cgDisabled;
-		}
-	}
-	QTreeWidgetItem::paintCell(p, *pcg, c, w, a);
-}
-*/
-
 bool UpdateFunc(Node *n, int flags, void *pv)
 {
 	if (!(n->GetType() & NTT_VISIBLE)) {
