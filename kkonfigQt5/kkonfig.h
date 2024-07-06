@@ -6,7 +6,7 @@
 #include <qstring.h>
 #include <qobject.h>
 #include <QMainWindow>
-#include <QTextEdit>
+#include <QTextBrowser>
 #include <QTreeView>
 #include <QTreeWidgetItem>
 
@@ -57,20 +57,23 @@ private slots:
 
 protected:
 	NodeRoot *nr;
-//	HelpText *helptext;
-	QTextEdit *helptext;
+	HelpText *helptext;
 	QTreeWidget *folders,*folders2;
 };
 
 //-----------------------------------------------------------------------------
-/*
-class HelpText : public QTextEdit
+
+class HelpText : public QTextBrowser
 {
 	Q_OBJECT
 
 public:
-	HelpText(QWidget *p,const char *n) : QTextEdit(p,n)
-	{ bFileNP=0; iFileStrs=-1; HelpNode=0; };
+	HelpText(QWidget *p) : QTextBrowser(p)
+	{
+		bFileNP = 0;
+		iFileStrs =- 1;
+		HelpNode = 0;
+	};
 	void keyPressEvent(QKeyEvent *e);
 	void setNodeRoot(NodeRoot **p) { pnr = p; };
 
@@ -91,9 +94,8 @@ public slots:
 	void linkTo(int,int);
 	void ShowText(char *,int);
 	void ShowFile(char *,int);
-	void ShowHelp( QListViewItem* );
+	void ShowHelp(QTreeWidgetItem*);
 };
-*/
 
 //-----------------------------------------------------------------------------
 

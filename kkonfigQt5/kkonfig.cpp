@@ -341,7 +341,7 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	folders = new QTreeWidget(qs);
 	QSplitter *qs2 = new QSplitter(Qt::Vertical, qs);
 	folders2 = new QTreeWidget(qs2);
-	helptext = new QTextEdit(qs2);
+	helptext = new HelpText(qs2);
 
 	setCentralWidget(qs);
 	qs->setStretchFactor(0, 40);
@@ -364,16 +364,14 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	// ---- fill tree here ----
 	nr = 0;
 	initFolders(0, 0, ac, av);
-//	folders->setRootIsDecorated( TRUE );
+//	folders->setRootIsDecorated(false);
 
-/*
-	helptext = new HelpText(qs2,"Text1");
 	helptext->setNodeRoot(&nr);
-	helptext->setTextFormat(Qt::PlainText);
+//	helptext->setTextFormat(Qt::PlainText);
 	helptext->setText("Click on any item to display help.\n");
-	helptext->setWordWrap(QTextEdit::NoWrap);
-	//helptext->setReadOnly(true);
-*/
+	helptext->setWordWrapMode(QTextOption::NoWrap);
+	helptext->setReadOnly(true);
+
 	connect(folders, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
 				this,  SLOT(ShowDeps(QTreeWidgetItem*)));
 
@@ -558,7 +556,7 @@ fillarch:
 //-----------------------------------------------------------------------------
 // class HelpText
 // forward & back
-/*
+
 void HelpText::FileInit()
 {
 	if (bFileNP) {
@@ -634,6 +632,7 @@ void HelpText::FilePrev(int i)
 
 void HelpText::keyPressEvent(QKeyEvent *e)
 {
+/*
 	int l, i;
 	getCursorPosition(&l, &i);
 	l++;
@@ -654,8 +653,9 @@ void HelpText::keyPressEvent(QKeyEvent *e)
 		return;
 	}
 	e->ignore();
+	*/
 }
-*/
+
 //-----------------------------------------------------------------------------
 // help handling
 
@@ -691,9 +691,9 @@ void KKView::ShowDeps( QTreeWidgetItem *li )
 	folders2->resizeColumnToContents(1);
 	nd->Update(1);
 
-//	helptext->ShowHelp(li);
+	helptext->ShowHelp(li);
 }
-/*
+
 void HelpText::ShowHelp(QTreeWidgetItem *li)
 {
 	if (!li) {
@@ -708,18 +708,18 @@ void HelpText::ShowHelp(QTreeWidgetItem *li)
 	if (OldN != n && OldN) {
 		if (OldN && OldN->node->GetType() & NTT_STR) {
 			OldN->setText(2, OldN->node->GetPrompt());
-			OldN->setRenameEnabled(0, false);
+//x			OldN->setRenameEnabled(0, false);
 		}
 		if (n && n->node->GetType() & NTT_STR && n->node->Get() > 3) {
 			n->setText(2, (char*)n->node->Get());
-			n->setRenameEnabled(0, true);
+//x			n->setRenameEnabled(0, true);
 		}
 	}
 	OldN = n;
 
 	FileInit();
 	HelpNode = n->node;
-
+/*
 	// show file instead ?
 	int ll = n->node->GetLine();
 	char *pt, *nn = n->node->GetSource();
@@ -728,7 +728,7 @@ void HelpText::ShowHelp(QTreeWidgetItem *li)
 		ShowText(pt, ll);
 		return;
 	}
-
+*/
 	// start help
 	char *p = (*pnr)->GetHelpH(n->node);
 	if (!p) {
@@ -740,6 +740,8 @@ void HelpText::ShowHelp(QTreeWidgetItem *li)
 
 void HelpText::linkTo(int para, int pos)
 {
+	return;
+	/*
 	// if in a link get the filename
 	QString s = text(para);
 
@@ -750,6 +752,7 @@ void HelpText::linkTo(int para, int pos)
 	}
 	FilePush(fn, l ? l : -1, para+1);
 	ShowText(p, l);
+	*/
 }
 
 void HelpText::ShowFile(char *cc, int ll)
@@ -766,7 +769,7 @@ void HelpText::ShowText(char *cc, int ll)
 {
 	QString qs(cc);
 	setText(qs);
-
+/*
 	// hilight the links
 	for (int i = 0, j = paragraphs(); i < j; i++) {
 		QString s = text(i); //l=0;
@@ -791,8 +794,9 @@ void HelpText::ShowText(char *cc, int ll)
 		hh+=paragraphRect(xx).height();
 	}
 	ensureVisible(10, hh, 0, 99999);
-}
 */
+}
+
 //------------------------------------------------------------------------------
 //file menu handlers
 
