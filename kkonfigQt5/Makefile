@@ -347,6 +347,9 @@ distclean: clean
 
 ####### Sub-libraries
 
+icons32aa.o: icons32aa.png
+	ld -o icons32aa.o -r -b binary icons32aa.png
+
 mocclean: compiler_moc_header_clean compiler_moc_objc_header_clean compiler_moc_source_clean
 
 mocables: compiler_moc_header_make_all compiler_moc_objc_header_make_all compiler_moc_source_make_all
