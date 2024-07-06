@@ -54,7 +54,8 @@ OBJECTS_DIR   = ./
 
 SOURCES       = kkonfig.cpp \
 		../nodes.cpp moc_kkonfig.cpp
-OBJECTS       = kkonfig.o \
+OBJECTS       = icons32aa.o \
+		kkonfig.o \
 		nodes.o \
 		moc_kkonfig.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \

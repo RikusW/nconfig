@@ -13,8 +13,17 @@ QMAKE_CXXFLAGS += -Wno-unused-parameter -Wno-write-strings -Wno-implicit-fallthr
 QMAKE_CXXFLAGS += -g -Og
 HEADERS += kkonfig.h ../nodes.h
 SOURCES += kkonfig.cpp ../nodes.cpp
+OBJECTS += icons32aa.o
 CONFIG += qt x11 release
 QT += widgets gui
+
+!exists(icons32aa.png) {
+    error("icons32aa.png is missing")
+}
+
+!exists(icons32aa.o) {
+	system("ld -o icons32aa.o -r -b binary icons32aa.png")
+}
 
 exists( ../kconfig/zconf.tab.c ) {
     message("Enabling Kernel 2.6.x support for kkonfig.")
