@@ -849,7 +849,7 @@ Node::Node()
 	wordlookup = 0;
 
 	Config = 0;
-	state = 0;
+	state = NS_COLLAPSED; //TODO better way to set this up
 	line = 0;
 	user = 0;
 }

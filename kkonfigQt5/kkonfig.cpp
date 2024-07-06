@@ -29,9 +29,9 @@ bool bShowSkipped = true;
 bool bShowDisabled = true;
 #endif
 
-//QColorGroup cgDisabled,cgSkipped;
+QBrush brEnabled = QBrush(QColor(200, 200, 200)); //TODO replace with theme color
 QBrush brDisabled = QBrush(QColor(100, 100, 100)); //TODO use disabled
-QBrush brSkipped = QBrush(QColor(200, 100, 200));
+QBrush brSkipped = QBrush(QColor(50, 0, 0));
 
 int main( int argc, char **argv )
 {
@@ -199,6 +199,29 @@ QPixmap *IconMenu = 0;
 QPixmap *IconChoice = 0;
 QPixmap *IconComment = 0;
 
+static const char *xpm_tree[] = { //Temp fix
+"16 16 2 1",
+". c None",
+"# c #c0c0c0",
+".....##.........",
+".....##.........",
+".....##.........",
+".....##.........",
+".....##.........",
+".....##.........",
+".....##.........",
+".....###########",
+".....###########",
+".....##.........",
+".....##.........",
+".....##.........",
+".....##.........",
+".....##.........",
+".....##.........",
+".....##........."};
+
+QPixmap *IconTree = 0;
+
 //-----------------------------------------------------------------------------
 // NodeListItem
 
@@ -207,7 +230,7 @@ NodeListItem::NodeListItem(QTreeWidget *p, Node *n)
 {
 	node = n;
 	n->user = this;
-	setText(0, n->GetPrompt());
+	setText(2, n->GetPrompt());
 	SetIcon();
 }
 
@@ -216,26 +239,38 @@ NodeListItem::NodeListItem(NodeListItem *parent, NodeListItem *after, Node *n)
 {
 	node = n;
 	n->user = this;
-	setText(0, n->GetPrompt());
+	setText(2, n->GetPrompt());
 	SetIcon();
 }
 
-void NodeListItem::activate()
+void NodeListItem::activate(int column)
 {
-	QPoint pt;
-//	if (!activatedPos(pt) || QRect(0, 0, height(), height()).contains(pt)) {
+	if (column == 1) {
 		if (node->GetType() & NTT_STR) {
 //			setRenameEnabled(0, true);
 //			startRename(0);
 		} else {
 			node->Advance();
 		}
-//	}
+	} else if (column == 0) {
+		setExpanded(!isExpanded());
+	}
 }
 
-void KKView::itemActivated(QTreeWidgetItem *item, int column)
+void KKView::itemClicked(QTreeWidgetItem *item, int column)
 {
-	((NodeListItem*)item)->activate();
+	printf("col %i\n", column);
+	((NodeListItem*)item)->activate(column);
+}
+
+void KKView::itemExpanded(QTreeWidgetItem *item)
+{
+	((NodeListItem*)item)->node->SetExpanded(true);
+}
+
+void KKView::itemCollapsed(QTreeWidgetItem *item)
+{
+	((NodeListItem*)item)->node->SetExpanded(false);
 }
 
 /*
@@ -258,30 +293,32 @@ void NodeListItem::SetIcon()
 {
 	if (node->GetType() & (NTT_INPUT | NTT_DEF)) {
 		switch (node->Get()) {
-		case 1:  setIcon(0, *IconNo);  break;
-		case 2:  setIcon(0, *IconMod); break;
-		case 3:  setIcon(0, *IconYes); break;
-		default: setIcon(0, *IconStr); break;
+		case 1:  setIcon(1, *IconNo);  break;
+		case 2:  setIcon(1, *IconMod); break;
+		case 3:  setIcon(1, *IconYes); break;
+		default: setIcon(1, *IconStr); break;
 		}
 	} else {
 		switch (node->GetType()) {
 		case NT_ROOT:
-		case NT_MENU:    setIcon(0, *IconMenu);    break;
-		case NT_CHOICEP: setIcon(0, *IconChoice);  break;
+		case NT_MENU:    setIcon(1, *IconMenu);    break;
+		case NT_CHOICEP: setIcon(1, *IconChoice);  break;
 		case NT_COMMENT | NTT_PARENT:
-		case NT_COMMENT: setIcon(0, *IconComment); break;
+		case NT_COMMENT: setIcon(1, *IconComment); break;
 		}
 	}
+	setIcon(0, *IconTree);
 
 	if (node->GetState() & NS_SKIPPED) {
 		setHidden(!(bShowSkipped && bShowDisabled));
-		setForeground(0, brSkipped);
+		setForeground(2, brSkipped);
 	} else {
 		if (node->GetState() & NS_DISABLED) {
 			setHidden(!bShowDisabled);
-			setForeground(0, brDisabled);
+			setForeground(2, brDisabled);
 		} else {
 			setHidden(false);
+			setForeground(2, brEnabled);
 		}
 	}
 
@@ -313,11 +350,11 @@ bool UpdateFunc(Node *n, int flags, void *pv)
 
 	if (flags & NS_SKIPPED) {
 		li->setHidden(!(bShowSkipped && bShowDisabled));
-		li->setForeground(0, brSkipped);
+		li->setForeground(2, brSkipped);
 	} else {
 		if (flags & NS_DISABLED) {
 			li->setHidden(!bShowDisabled);
-			li->setForeground(0, brDisabled);
+			li->setForeground(2, brDisabled);
 		}
 	}
 	return 1;
@@ -338,7 +375,9 @@ bool NotifyFunc(Node *n, int flags, void *pv)
 	}
 	switch (flags) {
 	//case NS_STATE: break;
-	//case NS_SKIP: break;
+	case NS_ENABLE:
+	case NS_DISABLE:
+	case NS_SKIP:
 	case NS_UNSKIP:
 		li->SetIcon();
 		if (n->GetType() & NTT_PARENT) {
@@ -349,8 +388,6 @@ bool NotifyFunc(Node *n, int flags, void *pv)
 		// to see what I mean: hide skipped, show disabled then toggle
 		// MTD support while RAM/ROM/Flash is expanded. -> skipped become visible
 		return 1;//break;
-	//case NS_ENABLE: break;
-	//case NS_DISABLE: break;
 	case NS_EXPAND:
 		li->setExpanded(true);
 		return 1;
@@ -358,7 +395,7 @@ bool NotifyFunc(Node *n, int flags, void *pv)
 		li->setExpanded(false);
 		return 1;
 	case NS_PROMPT:
-		li->setText(0, n->GetPrompt());
+		li->setText(2, n->GetPrompt());
 		return 1;
 	case NS_SELECT:	{
 		QTreeWidgetItem *qi = li;
@@ -366,8 +403,8 @@ bool NotifyFunc(Node *n, int flags, void *pv)
 			qi->setExpanded(true);
 		}
 		li->treeWidget()->setCurrentItem(li);
-		//setSelected(li, 1); Qt3
-//		li->treeWidget()->ensureItemVisible(li);
+		li->treeWidget()->scrollToItem(li);
+		puts("scrolltoitem");
 		return 1;
 		}
 	}
@@ -409,6 +446,7 @@ KKView::~KKView()
 	delete IconMenu;
 	delete IconChoice;
 	delete IconComment;
+	delete IconTree;
 }
 
 KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
@@ -422,6 +460,7 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	IconMenu = new QPixmap(xpm_menu);
 	IconChoice = new QPixmap(xpm_choice);
 	IconComment = new QPixmap(xpm_comment);
+	IconTree = new QPixmap(xpm_tree);
 
 	setWindowTitle("Kernel Konfig");
 	setMinimumSize(160, 160);
@@ -469,8 +508,18 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	qs->setStretchFactor(1, 60);
 	qs2->setStretchFactor(0, 30);
 	qs2->setStretchFactor(1, 70);
-	folders->headerItem()->setHidden(true);
-	folders2->headerItem()->setHidden(true);
+	folders->setColumnCount(3);
+	folders2->setColumnCount(3);
+	folders ->headerItem()->setSizeHint(0, QSize(200, 20)); //TODO improve this
+	folders2->headerItem()->setSizeHint(0, QSize(20, 20));
+	folders ->headerItem()->setSizeHint(1, QSize(20, 20));
+	folders2->headerItem()->setSizeHint(1, QSize(20, 20));
+	folders ->headerItem()->setText(0, "");
+	folders2->headerItem()->setText(0, "");
+	folders ->headerItem()->setText(1, "Icon");
+	folders2->headerItem()->setText(1, "Icon");
+	folders ->headerItem()->setText(2, "Description");
+	folders2->headerItem()->setText(2, "Description");
 
 	// ---- fill tree here ----
 	initFolders(0, 0, ac, av);
@@ -487,10 +536,20 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	connect(folders, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
 				this,  SLOT(ShowDeps(QTreeWidgetItem*)));
 
-	connect(folders,  SIGNAL(itemActivated(QTreeWidgetItem*, int)),
-				this,   SLOT(itemActivated(QTreeWidgetItem*, int)));
-	connect(folders2, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
-				this,   SLOT(itemActivated(QTreeWidgetItem*, int)));
+	connect(folders,  SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+				this,   SLOT(itemClicked(QTreeWidgetItem*, int)));
+	connect(folders2, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+				this,   SLOT(itemClicked(QTreeWidgetItem*, int)));
+
+	connect(folders,  SIGNAL(itemExpanded(QTreeWidgetItem*)),
+				this,   SLOT(itemExpanded(QTreeWidgetItem*)));
+	connect(folders2, SIGNAL(itemExpanded(QTreeWidgetItem*)),
+				this,   SLOT(itemExpanded(QTreeWidgetItem*)));
+
+	connect(folders,  SIGNAL(itemCollapsed(QTreeWidgetItem*)),
+				this,   SLOT(itemCollapsed(QTreeWidgetItem*)));
+	connect(folders2, SIGNAL(itemCollapsed(QTreeWidgetItem*)),
+				this,   SLOT(itemCollapsed(QTreeWidgetItem*)));
 
 /*
 	connect(folders2, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
@@ -560,9 +619,9 @@ bool enumFunc(Node *n, int flags, void *pv)
 				goto def; // open in deptree
 			}
 		case NT_CHOICEP:
-			if (!n->GetParent(NT_ROOT)) {
-				break; // don't open in deptree
-			}
+		//	if (!n->GetParent(NT_ROOT)) {
+		//		break; // don't open in deptree
+		//	}
 def:	default: {}
 			li->setExpanded(true);
 		}
@@ -651,6 +710,8 @@ fillarch:
 	rwd.last = 0;
 	nr->Enumerate(enumFunc, NS_T_ALL, &rwd);		// and the rest
 	li->setExpanded(true);
+	folders->resizeColumnToContents(0);
+	folders->resizeColumnToContents(1);
 }
 
 //-----------------------------------------------------------------------------
@@ -779,12 +840,14 @@ void KKView::ShowDeps( QTreeWidgetItem *li )
 		return;
 	}
 	NodeListItem *l = new NodeListItem(folders2, nd);	// add the root
-	l->setText(0, "Dependencies");
+//	l->setText(2, "Dependencies");
 	RW_UserData rwd;
 	rwd.parent = l;
 	rwd.last = 0;
 	nd->Enumerate(enumFunc, NS_T_ALL, &rwd);		// and the rest
 	l->setExpanded(true);
+	folders2->resizeColumnToContents(0);
+	folders2->resizeColumnToContents(1);
 	nd->Update(1);
 
 //	helptext->ShowHelp(li);
@@ -803,11 +866,11 @@ void HelpText::ShowHelp(QTreeWidgetItem *li)
 	// rename helper
 	if (OldN != n && OldN) {
 		if (OldN && OldN->node->GetType() & NTT_STR) {
-			OldN->setText(0, OldN->node->GetPrompt());
+			OldN->setText(2, OldN->node->GetPrompt());
 			OldN->setRenameEnabled(0, false);
 		}
 		if (n && n->node->GetType() & NTT_STR && n->node->Get() > 3) {
-			n->setText(0, (char*)n->node->Get());
+			n->setText(2, (char*)n->node->Get());
 			n->setRenameEnabled(0, true);
 		}
 	}

@@ -232,6 +232,7 @@ public:
 	virtual const char *GetStr();
 
 	void Select() { Notify(NS_SELECT); };	// pass NS_SELECT to the frontend
+	void SetExpanded(bool b) { if (b) state &= ~NS_COLLAPSED; else state |= NS_COLLAPSED; };
 
 	// misc getXxx
 	virtual char *GetHelp();	// Get the help in Configure.help

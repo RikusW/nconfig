@@ -51,7 +51,9 @@ private slots:
 	void helpAbout();
 	void helpAboutQt();
 
-	void itemActivated(QTreeWidgetItem *item, int column);
+	void itemClicked(QTreeWidgetItem *item, int column);
+	void itemExpanded(QTreeWidgetItem *item);
+	void itemCollapsed(QTreeWidgetItem *item);
 
 protected:
 	NodeRoot *nr;
@@ -105,7 +107,7 @@ public:
 	Node *node;
 	void SetIcon();
 
-	void activate();
+	void activate(int column);
 //	void okRename(int col);
 //	void paintCell(QPainter *p, const QColorGroup &cg, int c, int w, int a);
 };
