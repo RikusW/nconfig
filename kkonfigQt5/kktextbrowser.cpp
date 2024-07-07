@@ -14,10 +14,6 @@ KKTextBrowser::KKTextBrowser(QWidget *p) : QTextBrowser(p)
 
 	setText("Click on any item to display help.\n");
 	setWordWrapMode(QTextOption::NoWrap);
-	setOpenLinks(false);
-
-	connect(this, SIGNAL(anchorClicked(const QUrl&)),
-			this, SLOT(setSource(const QUrl&)));
 }
 
 void KKTextBrowser::setNode(Node *n)
@@ -28,7 +24,8 @@ void KKTextBrowser::setNode(Node *n)
 	}
 
 	QString link;
-	QTextStream(&link) << (*pnr)->GetPath() << n->GetSource();// << ":" << n->GetLine();
+	QTextStream(&link) << (*pnr)->GetPath() << n->GetSource() << "#L" << n->GetLine();
+	link = link.toHtmlEscaped();
 
 	QString html;
 	QTextStream h(&html);
@@ -43,21 +40,44 @@ void KKTextBrowser::setNode(Node *n)
 	setHtml(html);
 }
 
-void KKTextBrowser::setSource(const QUrl &url)
+QVariant KKTextBrowser::loadResource(int type, const QUrl &name)
 {
-	printf("link clicked -> %s <\n", qPrintable(url.toString()));
+	if (type != QTextDocument::HtmlResource) {
+//		printf("loadResource %i -> %s\n", type, qPrintable(name.toString()));
+		return QTextBrowser::loadResource(type, name);
+	}
+//	printf("loadR %i -> %s\n", type, qPrintable(name.toString()));
 
-	QFile f(url.toString());
-	f.open(QIODevice::ReadOnly);
-	QString s(f.readAll());
+	QUrl url(name);
+	url.setFragment(QString());
+	QString fn(url.toString());
+	QFile f(fn);
+//	printf("open file -> %s\n", qPrintable(fn));
+	if (!f.open(QFile::ReadOnly)) {
+		printf("KKTextBrowser::loadResource failed to load file <%s>\n", qPrintable(fn));
+		return QVariant();
+	}
+	int line = 0;
+	QString fragment = name.fragment();
+	if (fragment.at(0) == 'L') {
+		line = fragment.remove(0, 1).toInt();
+//		printf("line detected %i\n", line);
+	}
+	QString out;
+    QTextStream h(&out);
+    h << "<head></head><body><big><pre>";
+	char buf[1024];
+	for(int i = 1; f.readLine(buf, sizeof(buf)) > 0; i++) {
+		if (line == i) {
+			h << "<a id=L" << i << " style=\"background-color:DarkSlateGray\">" << i << "\t</a>";
+			h << "<font style=\"background-color:Green\">" << buf << "</font>";
+		} else {
+			h << "<a id=L" << i << " style=\"background-color:DarkSlateGray\">" << i << "\t</a>" << buf;
+		}
+	}
+	h << "</pre></big><body>";
 	f.close();
-
-	QString html;
-	QTextStream h(&html);
-	h << "<head></head><body><big>";
-	h << "<pre>" << s << "</pre></big><body>";
-
-	setHtml(html);
+	return out;
 }
 
 //-----------------------------------------------------------------------------

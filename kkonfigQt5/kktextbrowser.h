@@ -13,13 +13,13 @@ public:
 	void setNodeRoot(NodeRoot **p) { pnr = p; };
 	void setNode(Node *n);
 
+	QVariant loadResource(int type, const QUrl &name);
+
 protected:
 	Node *node;
 	NodeRoot **pnr; //really needed ?
 
 public slots:
-	void setSource(const QUrl &url);
-
 //	void linkTo(int,int);
 //	void ShowText(char *,int);
 //	void ShowFile(char *,int);
