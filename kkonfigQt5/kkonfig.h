@@ -9,10 +9,8 @@
 #include <QTextBrowser>
 #include <QTreeView>
 #include <QTreeWidgetItem>
-
-class Node;
-class NodeRoot;
-class HelpText;
+#include "kktextbrowser.h"
+#include "../nodes.h"
 
 //-----------------------------------------------------------------------------
 
@@ -30,6 +28,7 @@ protected:
 public slots:
 //	void Search(int id);
 	void ShowDeps(QTreeWidgetItem*);
+	void ShowHelp(QTreeWidgetItem*);
 //	void closeEvent(QCloseEvent *e);
 
 private slots:
@@ -57,44 +56,8 @@ private slots:
 
 protected:
 	NodeRoot *nr;
-	HelpText *helptext;
+	KKTextBrowser *kkbrowser;
 	QTreeWidget *folders,*folders2;
-};
-
-//-----------------------------------------------------------------------------
-
-class HelpText : public QTextBrowser
-{
-	Q_OBJECT
-
-public:
-	HelpText(QWidget *p) : QTextBrowser(p)
-	{
-		bFileNP = 0;
-		iFileStrs =- 1;
-		HelpNode = 0;
-	};
-	void keyPressEvent(QKeyEvent *e);
-	void setNodeRoot(NodeRoot **p) { pnr = p; };
-
-protected:
-	bool bFileNP;
-	int iFileStrs;
-	char FileStrs[10][255];
-	int FileLines[10];
-	Node *HelpNode;
-	NodeRoot **pnr;
-
-	void FileInit();
-	void FilePush(char*,int,int);
-	void FileNext(int=-1);
-	void FilePrev(int=-1);
-
-public slots:
-	void linkTo(int,int);
-	void ShowText(char *,int);
-	void ShowFile(char *,int);
-	void ShowHelp(QTreeWidgetItem*);
 };
 
 //-----------------------------------------------------------------------------

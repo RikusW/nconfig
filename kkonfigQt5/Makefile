@@ -53,11 +53,15 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = kkonfig.cpp \
-		../nodes.cpp moc_kkonfig.cpp
+		kktextbrowser.cpp \
+		../nodes.cpp moc_kkonfig.cpp \
+		moc_kktextbrowser.cpp
 OBJECTS       = icons32aa.o \
 		kkonfig.o \
+		kktextbrowser.o \
 		nodes.o \
-		moc_kkonfig.o
+		moc_kkonfig.o \
+		moc_kktextbrowser.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/linux.conf \
@@ -139,7 +143,9 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		kkonfig.pro kkonfig.h \
+		kktextbrowser.h \
 		../nodes.h kkonfig.cpp \
+		kktextbrowser.cpp \
 		../nodes.cpp
 QMAKE_TARGET  = kkonfig
 DESTDIR       = 
@@ -330,8 +336,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents kkonfig.h ../nodes.h $(DISTDIR)/
-	$(COPY_FILE) --parents kkonfig.cpp ../nodes.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents kkonfig.h kktextbrowser.h ../nodes.h $(DISTDIR)/
+	$(COPY_FILE) --parents kkonfig.cpp kktextbrowser.cpp ../nodes.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -366,13 +372,21 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 	g++ -pipe -Wno-unused-parameter -Wno-write-strings -Wno-implicit-fallthrough -Wno-unused-result -g -Og -O2 -dM -E -o moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_kkonfig.cpp
+compiler_moc_header_make_all: moc_kkonfig.cpp moc_kktextbrowser.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_kkonfig.cpp
+	-$(DEL_FILE) moc_kkonfig.cpp moc_kktextbrowser.cpp
 moc_kkonfig.cpp: kkonfig.h \
+		kktextbrowser.h \
+		../nodes.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
 	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/rikus/Programming/nconfig/kkonfigQt5/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/rikus/Programming/nconfig/kkonfigQt5 -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include kkonfig.h -o moc_kkonfig.cpp
+
+moc_kktextbrowser.cpp: kktextbrowser.h \
+		../nodes.h \
+		moc_predefs.h \
+		/usr/lib/qt5/bin/moc
+	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/rikus/Programming/nconfig/kkonfigQt5/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/rikus/Programming/nconfig/kkonfigQt5 -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include kktextbrowser.h -o moc_kktextbrowser.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -391,8 +405,13 @@ compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean
 ####### Compile
 
 kkonfig.o: kkonfig.cpp kkonfig.h \
+		kktextbrowser.h \
 		../nodes.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o kkonfig.o kkonfig.cpp
+
+kktextbrowser.o: kktextbrowser.cpp kktextbrowser.h \
+		../nodes.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o kktextbrowser.o kktextbrowser.cpp
 
 nodes.o: ../nodes.cpp ../nodes.h \
 		../kconfig/lkc.h \
@@ -403,6 +422,9 @@ nodes.o: ../nodes.cpp ../nodes.h \
 
 moc_kkonfig.o: moc_kkonfig.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_kkonfig.o moc_kkonfig.cpp
+
+moc_kktextbrowser.o: moc_kktextbrowser.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_kktextbrowser.o moc_kktextbrowser.cpp
 
 ####### Install
 

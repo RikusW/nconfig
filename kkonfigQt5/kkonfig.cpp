@@ -17,7 +17,6 @@ const char *CopyRight =
 //#include <qaccel.h>
 
 #include "kkonfig.h"
-#include "../nodes.h"
 
 #if 0
 bool bShowFile = false;
@@ -341,7 +340,7 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	folders = new QTreeWidget(qs);
 	QSplitter *qs2 = new QSplitter(Qt::Vertical, qs);
 	folders2 = new QTreeWidget(qs2);
-	helptext = new HelpText(qs2);
+	kkbrowser = new KKTextBrowser(qs2);
 
 	setCentralWidget(qs);
 	qs->setStretchFactor(0, 40);
@@ -364,16 +363,12 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 	// ---- fill tree here ----
 	nr = 0;
 	initFolders(0, 0, ac, av);
-//	folders->setRootIsDecorated(false);
+	kkbrowser->setNodeRoot(&nr);
 
-	helptext->setNodeRoot(&nr);
-//	helptext->setTextFormat(Qt::PlainText);
-	helptext->setText("Click on any item to display help.\n");
-	helptext->setWordWrapMode(QTextOption::NoWrap);
-	helptext->setReadOnly(true);
-
-	connect(folders, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
-				this,  SLOT(ShowDeps(QTreeWidgetItem*)));
+	connect(folders,  SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+				this, SLOT(ShowDeps(QTreeWidgetItem*)));
+	connect(folders2, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+				this, SLOT(ShowHelp(QTreeWidgetItem*)));
 
 	connect(folders,  SIGNAL(itemClicked(QTreeWidgetItem*, int)),
 				this,   SLOT(itemClicked(QTreeWidgetItem*, int)));
@@ -389,14 +384,6 @@ KKView::KKView(int ac, char **av, QWidget *parent, const char *name)
 				this,   SLOT(itemCollapsed(QTreeWidgetItem*)));
 	connect(folders2, SIGNAL(itemCollapsed(QTreeWidgetItem*)),
 				this,   SLOT(itemCollapsed(QTreeWidgetItem*)));
-
-/*
-	connect(folders2, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
-							helptext, SLOT(ShowHelp(QTreeWidgetItem*)));
-
-	connect(helptext,SIGNAL(cursorPositionChanged(int,int)),
-		helptext,SLOT(linkTo(int,int)));
-*/
 }
 /*
 void KKView::closeEvent(QCloseEvent *e)
@@ -554,109 +541,6 @@ fillarch:
 }
 
 //-----------------------------------------------------------------------------
-// class HelpText
-// forward & back
-
-void HelpText::FileInit()
-{
-	if (bFileNP) {
-		bFileNP=0;
-		return;
-	}
-	iFileStrs = -1;
-	for (int i = 0; i < 10; i++) {
-		FileStrs[i][0] = 0;
-	}
-}
-
-void HelpText::FilePush(char *s, int l, int lfrom=0)
-{
-	if (lfrom) {
-		FileLines[iFileStrs] = lfrom;
-	}
-	if (bFileNP) {
-		bFileNP=0;
-		return;
-	}
-	if (++iFileStrs > 9) {
-		iFileStrs = 10;
-		return;
-	}
-	FileLines[iFileStrs] = l;
-	strcpy(FileStrs[iFileStrs], s);
-	for (int i = iFileStrs + 1; i < 10; i++) {
-		FileStrs[i][0] = 0; // clear
-	}
-}
-
-void HelpText::FileNext(int i)
-{
-	if (++iFileStrs < 9 && FileStrs[iFileStrs][0]) {
-		bFileNP = 1;
-		if (i>-1 && iFileStrs > -1) {
-			FileLines[iFileStrs-1] = i;
-		}
-		ShowFile(FileStrs[iFileStrs], FileLines[iFileStrs]);
-	} else {
-		if (iFileStrs > 9) {
-			iFileStrs = 9;
-		} else {
-			if (!FileStrs[iFileStrs][0]) {
-				iFileStrs--;
-			}
-		}
-	}
-}
-
-void HelpText::FilePrev(int i)
-{
-	if (--iFileStrs > -1) {
-		bFileNP = 1;
-		if (i > -1 && iFileStrs < 10) {
-			FileLines[iFileStrs + 1] = i;
-		}
-		ShowFile(FileStrs[iFileStrs], FileLines[iFileStrs]);
-	} else {
-		if (iFileStrs < -1) {
-			iFileStrs = -1;
-		}
-		if (HelpNode) {
-			bFileNP = 1;
-			bool t = bShowFile;
-			bShowFile = 0;
-			ShowHelp((QTreeWidgetItem*)HelpNode->user);
-			bShowFile = t;
-		}
-	}
-}
-
-void HelpText::keyPressEvent(QKeyEvent *e)
-{
-/*
-	int l, i;
-	getCursorPosition(&l, &i);
-	l++;
-	switch (e->key()) {
-	case Qt::Key_Escape:
-	case Qt::Key_Backspace:
-	case Qt::Key_Left:
-		FilePrev(l);
-		break;
-	case Qt::Key_Space:
-	case Qt::Key_Return:
-	case Qt::Key_Enter:
-	case Qt::Key_Right:
-		FileNext(l);
-		break;
-	default:
-		QTextEdit::keyPressEvent(e);
-		return;
-	}
-	e->ignore();
-	*/
-}
-
-//-----------------------------------------------------------------------------
 // help handling
 
 NodeListItem *OldN = 0;
@@ -691,10 +575,10 @@ void KKView::ShowDeps( QTreeWidgetItem *li )
 	folders2->resizeColumnToContents(1);
 	nd->Update(1);
 
-	helptext->ShowHelp(li);
+	ShowHelp(li);
 }
 
-void HelpText::ShowHelp(QTreeWidgetItem *li)
+void KKView::ShowHelp(QTreeWidgetItem *li)
 {
 	if (!li) {
 		return;
@@ -717,84 +601,7 @@ void HelpText::ShowHelp(QTreeWidgetItem *li)
 	}
 	OldN = n;
 
-	FileInit();
-	HelpNode = n->node;
-/*
-	// show file instead ?
-	int ll = n->node->GetLine();
-	char *pt, *nn = n->node->GetSource();
-	if (bShowFile && (pt = (*pnr)->GetFileH(nn))) {
-		FilePush(nn, ll);
-		ShowText(pt, ll);
-		return;
-	}
-*/
-	// start help
-	char *p = (*pnr)->GetHelpH(n->node);
-	if (!p) {
-		return;
-	}
-	ShowText(p, -1);
-	return;
-}
-
-void HelpText::linkTo(int para, int pos)
-{
-	return;
-	/*
-	// if in a link get the filename
-	QString s = text(para);
-
-	int l;
-	char *p, *fn;
-	if (!(p = (*pnr)->GetLinkFileH(s, pos, 0, 0, &l, &fn))) {
-		return;
-	}
-	FilePush(fn, l ? l : -1, para+1);
-	ShowText(p, l);
-	*/
-}
-
-void HelpText::ShowFile(char *cc, int ll)
-{
-	char *p = (*pnr)->GetFileH(cc);
-	if (!p) {
-		return;
-	}
-	FilePush(cc, ll);
-	ShowText(p, ll);
-}
-
-void HelpText::ShowText(char *cc, int ll)
-{
-	QString qs(cc);
-	setText(qs);
-/*
-	// hilight the links
-	for (int i = 0, j = paragraphs(); i < j; i++) {
-		QString s = text(i); //l=0;
-		char *st, *e;
-		const char *b = s;
-		for (e = (char*)b; (*pnr)->GetLink(e, -1, &st, &e);) {
-			setSelection(i, st - b, i, e - b);// l=r;
-			setColor(QColor(0, 0, 255));
-		}
-	}
-	setSelection(0, 0, 0, 0);
-
-	// hilight the linked line and go to it if specified
-	setSelection(ll-1, 0, ll, 0);
-	setColor(QColor(255, 0, 255));
-	setSelection(ll-1, 0, ll-1, 0);
-	insertAt(">>>", ll-1, 0);
-
-	//ensureCursorVisible(); // don't seem to work....?????
-	int hh=0; // so lets do this UGLY hack.........
-	for (int xx = 0; xx <= ll; xx++) {
-		hh+=paragraphRect(xx).height();
-	}
-	ensureVisible(10, hh, 0, 99999);
-*/
+	kkbrowser->setNode(n->node);
 }
 
 //------------------------------------------------------------------------------

@@ -6,8 +6,8 @@ TEMPLATE = app
 #TODO fix these later
 QMAKE_CXXFLAGS += -Wno-unused-parameter -Wno-write-strings -Wno-implicit-fallthrough -Wno-unused-result
 QMAKE_CXXFLAGS += -g -Og
-HEADERS += kkonfig.h ../nodes.h
-SOURCES += kkonfig.cpp ../nodes.cpp
+HEADERS += kkonfig.h kktextbrowser.h ../nodes.h
+SOURCES += kkonfig.cpp kktextbrowser.cpp ../nodes.cpp
 OBJECTS += icons32aa.o
 CONFIG += qt x11 release
 QT += widgets gui

@@ -3,6 +3,9 @@
 //Copyright (C) 2004-2006 Rikus Wessels <rikusw at rootshell dot be>
 //GNU GPL v2.0
 
+#ifndef _NODES_H_
+#define _NODES_H_
+
 #include <stdint.h>
 
 // the number of CONFIG_'s allowed, normally between 2000 and 2500
@@ -697,4 +700,5 @@ private:
 };
 #endif
 
+#endif //_NODES_H_
 
